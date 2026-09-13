@@ -1,0 +1,50 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-mail-test">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+        </div>
+    </div>
+
+    <section class="ses-panel">
+        <div class="ses-form-panel">
+            <?= $this->form ?>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('mailTestHistoryTitle') ?></h3>
+        </div>
+        <?php if (empty($this->history)): ?>
+            <div class="ses-empty"><?= pm_Locale::lmsg('noMailTestsYet') ?></div>
+        <?php else: ?>
+            <div class="ses-table-wrap">
+                <table class="data-table ses-table">
+                    <thead>
+                        <tr>
+                            <th><?= pm_Locale::lmsg('fromColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('toColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('subjectColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('statusColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('responseColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('dateColumn') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->history as $row): ?>
+                        <tr>
+                            <td><?= $this->escape($row['from_email']) ?></td>
+                            <td><?= $this->escape($row['to_email']) ?></td>
+                            <td class="ses-long"><?= $this->escape($row['subject']) ?></td>
+                            <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($row['status'])) ?>"><?= $this->escape($row['status']) ?></span></td>
+                            <td class="ses-long"><?= $this->escape($row['provider_message_id'] ?: $row['response']) ?></td>
+                            <td><?= $this->escape($row['created_at']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </section>
+</div>

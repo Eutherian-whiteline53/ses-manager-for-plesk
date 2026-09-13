@@ -1,0 +1,46 @@
+<?php
+$connection = $this->connection;
+$overall = isset($connection['overall']) ? $connection['overall'] : 'unknown';
+$overallBadge = $overall === 'connected' ? 'pass' : ($overall === 'missing' || $overall === 'failed' ? 'failed' : 'warning');
+$accountKnown = in_array($connection['account'], array('production', 'sandbox'), true);
+$accountBadge = !$accountKnown ? 'disabled' : (!empty($connection['productionAccess']) ? 'pass' : 'warning');
+$accountLabel = !$accountKnown ? pm_Locale::lmsg('unknownLabel') : (!empty($connection['productionAccess']) ? pm_Locale::lmsg('productionStatus') : pm_Locale::lmsg('sandboxStatus'));
+$sendingKnown = in_array($connection['sending'], array('enabled', 'disabled'), true);
+$sendingBadge = !$sendingKnown ? 'disabled' : (!empty($connection['sendingEnabled']) ? 'pass' : 'failed');
+$sendingLabel = !$sendingKnown ? pm_Locale::lmsg('unknownLabel') : (!empty($connection['sendingEnabled']) ? pm_Locale::lmsg('enabled') : pm_Locale::lmsg('disabled'));
+?>
+<section class="ses-panel ses-connection-panel">
+    <div class="ses-panel-header">
+        <h3 class="ses-panel-title"><?= pm_Locale::lmsg('sesConnectionTitle') ?></h3>
+        <span class="ses-badge" data-status="<?= $this->escape($overallBadge) ?>"><?= $this->escape($overall) ?></span>
+    </div>
+    <div class="ses-panel-body">
+        <p class="ses-page-description"><?= $this->escape($connection['message']) ?></p>
+        <div class="ses-grid">
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('apiStatusLabel') ?></p>
+                <p class="ses-stat-value"><small><?= $this->escape($connection['api']) ?></small></p>
+                <span class="ses-badge" data-status="<?= $connection['api'] === 'connected' ? 'pass' : ($connection['api'] === 'missing' ? 'disabled' : 'failed') ?>"><?= $this->escape($connection['region']) ?></span>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('accountStatusLabel') ?></p>
+                <p class="ses-stat-value"><small><?= $this->escape($connection['account']) ?></small></p>
+                <span class="ses-badge" data-status="<?= $this->escape($accountBadge) ?>"><?= $this->escape($accountLabel) ?></span>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('sendingStatusLabel') ?></p>
+                <p class="ses-stat-value"><small><?= $this->escape($connection['sending']) ?></small></p>
+                <span class="ses-badge" data-status="<?= $this->escape($sendingBadge) ?>"><?= $this->escape($sendingLabel) ?></span>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('smtpStatusLabel') ?></p>
+                <p class="ses-stat-value"><small><?= $this->escape($connection['smtp']) ?></small></p>
+                <span class="ses-badge" data-status="<?= $connection['smtp'] === 'configured' ? 'pass' : 'disabled' ?>"><?= $connection['smtp'] === 'configured' ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('lastCheckedColumn') ?></p>
+                <p class="ses-stat-value"><small><?= $this->escape($connection['checkedAt'] ?: pm_Locale::lmsg('neverChecked')) ?></small></p>
+            </div>
+        </div>
+    </div>
+</section>

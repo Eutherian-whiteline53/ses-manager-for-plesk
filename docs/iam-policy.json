@@ -1,0 +1,41 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "SesManagerIdentityManagement",
+            "Effect": "Allow",
+            "Action": [
+                "ses:ListEmailIdentities",
+                "ses:GetAccount",
+                "ses:GetEmailIdentity",
+                "ses:CreateEmailIdentity",
+                "ses:PutEmailIdentityMailFromAttributes",
+                "ses:GetIdentityNotificationAttributes",
+                "ses:SetIdentityNotificationTopic",
+                "ses:BatchGetMetricData"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SesManagerSendMail",
+            "Effect": "Allow",
+            "Action": [
+                "ses:SendEmail",
+                "ses:SendRawEmail"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SesManagerSnsAutomation",
+            "Effect": "Allow",
+            "Action": [
+                "sns:CreateTopic",
+                "sns:Subscribe",
+                "sns:ListSubscriptionsByTopic",
+                "sns:GetSubscriptionAttributes",
+                "sns:SetSubscriptionAttributes"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+<?php if (!empty($this->issues)): ?>
+    <ul class="ses-analysis-issues">
+        <?php foreach ($this->issues as $issue): ?>
+            <li><?= $this->escape($issue) ?></li>
+        <?php endforeach; ?>
+    </ul>
+<?php else: ?>
+    <p class="ses-analysis-ok"><?= pm_Locale::lmsg('analysisNoIssues') ?></p>
+<?php endif; ?>

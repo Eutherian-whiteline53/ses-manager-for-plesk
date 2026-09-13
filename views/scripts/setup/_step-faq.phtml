@@ -1,0 +1,144 @@
+<?php if ($this->step === 'welcome'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('setupWizardWelcomeFaqTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <ol class="ses-guide-list">
+                <li><?= pm_Locale::lmsg('setupWizardWelcomeFaqAws') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardWelcomeFaqSmtp') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardWelcomeFaqDns') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardWelcomeFaqSns') ?></li>
+            </ol>
+        </div>
+    </details>
+<?php elseif ($this->step === 'region'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('setupWizardRegionFaqTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <p><?= pm_Locale::lmsg('setupWizardRegionFaqText') ?></p>
+            <p class="ses-guide-note"><?= pm_Locale::lmsg('awsCredentialsGuideNote') ?></p>
+        </div>
+    </details>
+<?php elseif ($this->step === 'aws'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('awsCredentialsGuideTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <div class="ses-guide-grid">
+                <div>
+                    <p><?= pm_Locale::lmsg('awsCredentialsGuideIntro') ?></p>
+                    <ol class="ses-guide-list">
+                        <li><?= pm_Locale::lmsg('awsCredentialsStepIam') ?></li>
+                        <li><?= pm_Locale::lmsg('awsCredentialsStepAccessKey') ?></li>
+                        <li><?= pm_Locale::lmsg('awsIamTroubleshootingNote') ?></li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="ses-guide-label"><?= pm_Locale::lmsg('awsIamPolicyLabel') ?></p>
+                    <pre class="ses-code">{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ses:ListEmailIdentities",
+        "ses:GetAccount",
+        "ses:CreateEmailIdentity",
+        "ses:GetEmailIdentity",
+        "ses:BatchGetMetricData",
+        "ses:PutEmailIdentityMailFromAttributes",
+        "ses:GetIdentityNotificationAttributes",
+        "ses:SetIdentityNotificationTopic",
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+        "sns:CreateTopic",
+        "sns:Subscribe",
+        "sns:ListSubscriptionsByTopic",
+        "sns:GetSubscriptionAttributes",
+        "sns:SetSubscriptionAttributes"
+      ],
+      "Resource": "*"
+    }
+  ]
+}</pre>
+                </div>
+            </div>
+        </div>
+    </details>
+<?php elseif ($this->step === 'sandbox'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('setupWizardSandboxFaqTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <ol class="ses-guide-list">
+                <li><?= pm_Locale::lmsg('setupWizardSandboxFaqAccount') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardSandboxFaqUseCase') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardSandboxFaqBounce') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardSandboxFaqLimit') ?></li>
+            </ol>
+        </div>
+    </details>
+<?php elseif ($this->step === 'smtp'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('setupWizardSmtpFaqTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <ol class="ses-guide-list">
+                <li><?= pm_Locale::lmsg('setupWizardSmtpFaqCreate') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardSmtpFaqDifferent') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardSmtpFaqTls') ?></li>
+            </ol>
+        </div>
+    </details>
+<?php elseif ($this->step === 'dns'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('setupWizardDnsFaqTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <ol class="ses-guide-list">
+                <li><?= pm_Locale::lmsg('setupWizardDnsFaqMailFrom') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardDnsFaqSpf') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardDnsFaqDmarc') ?></li>
+            </ol>
+        </div>
+    </details>
+<?php elseif ($this->step === 'automation'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('setupWizardAutomationFaqTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <ol class="ses-guide-list">
+                <li><?= pm_Locale::lmsg('setupWizardAutomationFaqJob') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardAutomationFaqDns') ?></li>
+                <li><?= pm_Locale::lmsg('setupWizardAutomationFaqSafe') ?></li>
+            </ol>
+        </div>
+    </details>
+<?php elseif ($this->step === 'cloudflare'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('cloudflareTokenGuideTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <ol class="ses-guide-list">
+                <li><?= pm_Locale::lmsg('cloudflareTokenStepCreate') ?></li>
+                <li><?= pm_Locale::lmsg('cloudflareTokenStepPermissions') ?></li>
+                <li><?= pm_Locale::lmsg('cloudflareTokenStepScope') ?></li>
+            </ol>
+            <p class="ses-guide-note"><?= pm_Locale::lmsg('cloudflareTokenGuideNote') ?></p>
+        </div>
+    </details>
+<?php elseif ($this->step === 'sns'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('snsSetupGuideTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <p class="ses-guide-label"><?= pm_Locale::lmsg('snsWebhookUrlLabel') ?></p>
+            <pre class="ses-code"><?= $this->escape($this->webhookUrl) ?></pre>
+            <ol class="ses-guide-list">
+                <li><?= pm_Locale::lmsg('snsSetupStepAuto') ?></li>
+                <li><?= pm_Locale::lmsg('snsSetupChecklistRaw') ?></li>
+                <li><?= pm_Locale::lmsg('snsSetupStepSes') ?></li>
+            </ol>
+            <p class="ses-guide-note"><?= pm_Locale::lmsg('snsSetupGuideNote') ?></p>
+        </div>
+    </details>
+<?php elseif ($this->step === 'summary'): ?>
+    <details class="ses-guide ses-faq">
+        <summary class="ses-faq-summary"><span><?= pm_Locale::lmsg('setupWizardSummaryFaqTitle') ?></span></summary>
+        <div class="ses-faq-body">
+            <p><?= pm_Locale::lmsg('setupWizardSummaryFaqText') ?></p>
+        </div>
+    </details>
+<?php endif; ?>

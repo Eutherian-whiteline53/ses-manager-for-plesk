@@ -1,0 +1,258 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<?php
+$webhookUrl = $this->webhookUrl;
+$snapshot = $this->reputationSnapshot;
+$feedbackMetrics = $this->feedbackMetrics;
+$health = $snapshot ? strtolower($snapshot['health']) : 'unknown';
+$healthKey = in_array($health, array('excellent', 'warning', 'critical'), true)
+    ? 'reputationHealth' . ucfirst($health)
+    : 'reputationHealthUnknown';
+?>
+<div class="ses-page ses-manager-bounce">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+            <p class="ses-page-description"><?= pm_Locale::lmsg('bouncePageDescription') ?></p>
+        </div>
+        <a href="<?= $this->url(array('controller' => 'bounce', 'action' => 'export')) ?>" class="btn">
+            <?= pm_Locale::lmsg('exportCsvButton') ?>
+        </a>
+    </div>
+
+    <section class="ses-panel">
+        <div class="ses-panel-body">
+            <details class="ses-guide ses-faq ses-faq-left">
+                <summary class="ses-faq-summary">
+                    <span><?= pm_Locale::lmsg('snsSetupGuideTitle') ?></span>
+                </summary>
+                <div class="ses-faq-body">
+                    <p><?= pm_Locale::lmsg('snsSetupGuideIntro') ?></p>
+                    <p class="ses-guide-label"><?= pm_Locale::lmsg('snsWebhookUrlLabel') ?></p>
+                    <pre class="ses-code"><?= $this->escape($webhookUrl) ?></pre>
+                    <ol class="ses-guide-list">
+                        <li><?= pm_Locale::lmsg('snsSetupStepTopic') ?></li>
+                        <li><?= pm_Locale::lmsg('snsSetupStepSubscribe') ?></li>
+                        <li><?= pm_Locale::lmsg('snsSetupStepSes') ?></li>
+                        <li><?= pm_Locale::lmsg('snsSetupStepConfirm') ?></li>
+                    </ol>
+                    <p class="ses-guide-label"><?= pm_Locale::lmsg('snsSetupChecklistTitle') ?></p>
+                    <ul class="ses-guide-list">
+                        <li><?= pm_Locale::lmsg('snsSetupChecklistSubscription') ?></li>
+                        <li><?= pm_Locale::lmsg('snsSetupChecklistRaw') ?></li>
+                        <li><?= pm_Locale::lmsg('snsSetupChecklistBounce') ?></li>
+                        <li><?= pm_Locale::lmsg('snsSetupChecklistComplaint') ?></li>
+                        <li><?= pm_Locale::lmsg('snsSetupChecklistDelivery') ?></li>
+                    </ul>
+                    <p class="ses-guide-label"><?= pm_Locale::lmsg('snsSetupSimulatorTitle') ?></p>
+                    <ul class="ses-guide-list">
+                        <li><?= pm_Locale::lmsg('snsSetupSimulatorBounce') ?></li>
+                        <li><?= pm_Locale::lmsg('snsSetupSimulatorComplaint') ?></li>
+                    </ul>
+                    <p class="ses-guide-note"><?= pm_Locale::lmsg('snsSetupSimulatorNote') ?></p>
+                    <p class="ses-guide-note"><?= pm_Locale::lmsg('snsSetupGuideNote') ?></p>
+	                    <div class="ses-action-row">
+	                        <form method="post" action="<?= $this->url(array('controller' => 'bounce', 'action' => 'configure-sns')) ?>">
+	                            <?= $this->csrfField ?>
+	                            <button type="submit" class="btn btn-primary"><?= pm_Locale::lmsg('snsConfigureButton') ?></button>
+	                        </form>
+	                        <form method="post" action="<?= $this->url(array('controller' => 'bounce', 'action' => 'disable-raw')) ?>">
+	                            <?= $this->csrfField ?>
+	                            <button type="submit" class="btn"><?= pm_Locale::lmsg('snsRawCheckButton') ?></button>
+	                        </form>
+                    </div>
+                </div>
+            </details>
+        </div>
+    </section>
+
+    <?php if ($snapshot): ?>
+        <div class="ses-grid">
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('bounceRateLabel') ?></p>
+                <p class="ses-stat-value"><?= number_format((float) $snapshot['bounce_rate'], 2) ?><small>%</small></p>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('complaintRateLabel') ?></p>
+                <p class="ses-stat-value"><?= number_format((float) $snapshot['complaint_rate'], 2) ?><small>%</small></p>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('dailyUsageLabel') ?></p>
+                <p class="ses-stat-value"><?= number_format((int) $snapshot['sent_last_24_hours']) ?> <small>/ <?= number_format((int) $snapshot['max_24_hour_send']) ?></small></p>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('healthLabel') ?></p>
+                <p class="ses-stat-value"><?= pm_Locale::lmsg($healthKey) ?></p>
+                <span class="ses-badge" data-status="<?= $this->escape($health === 'excellent' ? 'pass' : ($health === 'warning' ? 'warning' : ($health === 'unknown' ? 'disabled' : 'failed'))) ?>">
+                    <?= $this->escape($snapshot['enforcement_status']) ?>
+                </span>
+            </div>
+        </div>
+    <?php else: ?>
+        <section class="ses-panel">
+            <div class="ses-panel-body">
+                <p class="ses-empty"><?= pm_Locale::lmsg('bounceReputationNoData') ?></p>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('feedbackMetricsTitle') ?></h3>
+            <span class="ses-badge" data-status="<?= !empty($feedbackMetrics['success']) ? 'pass' : 'warning' ?>">
+                <?= !empty($feedbackMetrics['success']) ? pm_Locale::lmsg('awsApiLabel') : pm_Locale::lmsg('unavailableLabel') ?>
+            </span>
+        </div>
+        <div class="ses-panel-body">
+            <?php if (empty($feedbackMetrics['success']) && !empty($feedbackMetrics['message'])): ?>
+                <p class="ses-manager-status-warning"><?= $this->escape($feedbackMetrics['message']) ?></p>
+            <?php endif; ?>
+            <div class="ses-table-wrap">
+                <table class="data-table ses-table">
+                    <thead>
+                        <tr>
+                            <th><?= pm_Locale::lmsg('metricColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('countColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('rateColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('changeColumn') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($feedbackMetrics['rows'] as $row): ?>
+                            <tr>
+                                <td><?= $this->escape($row['label']) ?></td>
+                                <td><?= number_format((int) $row['value']) ?></td>
+                                <td>
+                                    <?php if (empty($row['active'])): ?>
+                                        <span class="ses-badge" data-status="disabled"><?= pm_Locale::lmsg('disabled') ?></span>
+                                    <?php elseif ($row['rate'] === null): ?>
+                                        -
+                                    <?php else: ?>
+                                        <?= number_format((float) $row['rate'], 2) ?>%
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (empty($row['active']) || $row['diff'] === null): ?>
+                                        -
+                                    <?php else: ?>
+                                        <span class="ses-metric-diff <?= (float) $row['diff'] > 0 ? 'is-up' : ((float) $row['diff'] < 0 ? 'is-down' : '') ?>">
+                                            <?= (float) $row['diff'] > 0 ? '+' : '' ?><?= number_format((float) $row['diff'], 2) ?>%
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <p class="ses-guide-note"><?= pm_Locale::lmsg('feedbackMetricsNote') ?></p>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('snsConfirmationsTitle') ?></h3>
+        </div>
+        <div class="ses-panel-body">
+            <p class="ses-page-description"><?= pm_Locale::lmsg('snsConfirmationsDescription') ?></p>
+            <?php if (empty($this->snsConfirmations)): ?>
+                <p class="ses-empty"><?= pm_Locale::lmsg('snsConfirmationsEmpty') ?></p>
+            <?php else: ?>
+                <div class="ses-table-wrap">
+                    <table class="data-table ses-table">
+                        <thead>
+                            <tr>
+                                <th><?= pm_Locale::lmsg('statusColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('dateColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('snsTopicArnLabel') ?></th>
+                                <th><?= pm_Locale::lmsg('snsSubscribeUrlColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('responseColumn') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($this->snsConfirmations as $confirmation): ?>
+                            <tr>
+                                <td><span class="ses-badge" data-status="<?= $this->escape($confirmation['status'] === 'confirmed' ? 'pass' : ($confirmation['status'] === 'failed' ? 'failed' : 'warning')) ?>"><?= $this->escape($confirmation['status']) ?></span></td>
+                                <td><?= $this->escape($confirmation['received_at']) ?></td>
+                                <td class="ses-long"><?= $this->escape($confirmation['topic_arn']) ?></td>
+                                <td class="ses-long"><code><?= $this->escape($confirmation['subscribe_url']) ?></code></td>
+                                <td class="ses-long"><?= $this->escape($confirmation['last_error'] ?: '-') ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('snsWebhookAttemptsTitle') ?></h3>
+        </div>
+        <div class="ses-panel-body">
+            <p class="ses-page-description"><?= pm_Locale::lmsg('snsWebhookAttemptsDescription') ?></p>
+            <?php if (empty($this->snsWebhookAttempts)): ?>
+                <p class="ses-empty"><?= pm_Locale::lmsg('snsWebhookAttemptsEmpty') ?></p>
+            <?php else: ?>
+                <div class="ses-table-wrap">
+                    <table class="data-table ses-table">
+                        <thead>
+                            <tr>
+                                <th><?= pm_Locale::lmsg('dateColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('typeColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('statusColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('snsTopicArnLabel') ?></th>
+                                <th><?= pm_Locale::lmsg('responseColumn') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($this->snsWebhookAttempts as $attempt): ?>
+                            <tr>
+                                <td><?= $this->escape($attempt['created_at']) ?></td>
+                                <td><?= $this->escape($attempt['message_type'] ?: '-') ?></td>
+                                <td><span class="ses-badge" data-status="<?= $this->escape($attempt['status'] === 'success' ? 'pass' : 'failed') ?>"><?= $this->escape($attempt['http_status']) ?> <?= $this->escape($attempt['status']) ?></span></td>
+                                <td class="ses-long"><?= $this->escape($attempt['topic_arn'] ?: '-') ?></td>
+                                <td class="ses-long"><?= $this->escape($attempt['reason'] ?: '-') ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('bouncePageTitle') ?></h3>
+        </div>
+        <?php if (empty($this->events)): ?>
+            <div class="ses-empty"><?= pm_Locale::lmsg('noEventsYet') ?></div>
+        <?php else: ?>
+            <div class="ses-table-wrap">
+                <table class="data-table ses-table">
+                    <thead>
+                        <tr>
+                            <th><?= pm_Locale::lmsg('domainColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('eventTypeColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('bounceTypeColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('recipientColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('dateColumn') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->events as $event): ?>
+                        <tr>
+                            <td><?= $this->escape(isset($this->domainNames[$event['domain_id']]) ? $this->domainNames[$event['domain_id']] : '-') ?></td>
+                            <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($event['event_type'])) ?>"><?= $this->escape($event['event_type']) ?></span></td>
+                            <td><?= $this->escape($event['bounce_type'] !== null ? $event['bounce_type'] : '-') ?></td>
+                            <td><?= $this->escape($event['recipient']) ?></td>
+                            <td><?= $this->escape($event['received_at']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </section>
+</div>

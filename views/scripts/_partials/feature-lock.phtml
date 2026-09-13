@@ -1,0 +1,32 @@
+<?php
+$title = isset($this->title) ? (string) $this->title : pm_Locale::lmsg('featureUpgradeCtaTitle');
+$requiredPlan = isset($this->requiredPlan) && $this->requiredPlan
+    ? ucwords(str_replace('_', ' ', (string) $this->requiredPlan))
+    : null;
+$upgradeUrl = isset($this->upgradeUrl) ? (string) $this->upgradeUrl : '';
+$isSoft = !empty($this->soft);
+$actionUrl = $upgradeUrl !== ''
+    ? $upgradeUrl
+    : $this->url(array('controller' => 'settings', 'action' => 'index'));
+$externalAttrs = $upgradeUrl !== '' ? ' target="_blank" rel="noopener noreferrer"' : '';
+?>
+<div class="ses-feature-lock<?= $isSoft ? ' is-soft' : '' ?>">
+    <div class="ses-feature-lock-copy">
+        <span class="ses-feature-lock-kicker"><?= pm_Locale::lmsg('featureUpgradeCtaTitle') ?></span>
+        <strong><?= $this->escape($title) ?></strong>
+        <p>
+            <?= pm_Locale::lmsg('featureRequiresUpgradeMessage') ?>
+            <?php if ($requiredPlan): ?>
+                <?= sprintf(pm_Locale::lmsg('featureRequiredPlanMessage'), $this->escape($requiredPlan)) ?>
+            <?php endif; ?>
+        </p>
+        <?php if ($requiredPlan): ?>
+            <small><?= sprintf(pm_Locale::lmsg('featureUpgradeCtaText'), $this->escape($requiredPlan)) ?></small>
+        <?php else: ?>
+            <small><?= pm_Locale::lmsg('featureUpgradeCurrentPlanHint') ?></small>
+        <?php endif; ?>
+    </div>
+    <div class="ses-feature-lock-action">
+        <a class="btn btn-primary" href="<?= $this->escape($actionUrl) ?>"<?= $externalAttrs ?>><?= pm_Locale::lmsg('featureUpgradeAction') ?></a>
+    </div>
+</div>

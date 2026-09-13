@@ -1,0 +1,13 @@
+{
+    "name": "opphisse-agency/ses-manager",
+    "description": "SES Manager for Plesk",
+    "type": "project",
+    "require": {
+        "php": ">=7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Library\\": "library/"
+        }
+    }
+}

@@ -1,0 +1,174 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-settings">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+        </div>
+    </div>
+
+    <?= $this->partial('_partials/ses-connection.phtml', array('connection' => $this->sesConnection)) ?>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <div>
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('settingsFullSetupTitle') ?></h3>
+                <p class="ses-page-description"><?= pm_Locale::lmsg('settingsFullSetupDescription') ?></p>
+            </div>
+            <span class="ses-badge" data-status="<?= !empty($this->settings['setup_completed']) ? 'enabled' : 'disabled' ?>">
+                <?= !empty($this->settings['setup_completed']) ? pm_Locale::lmsg('setupCompletedTitle') : pm_Locale::lmsg('notStarted') ?>
+            </span>
+        </div>
+        <div class="ses-panel-body">
+            <div class="ses-action-row">
+                <a class="btn btn-primary" href="<?= $this->escape($this->setupWizardUrl) ?>"><?= pm_Locale::lmsg('openSetupWizardButton') ?></a>
+                <form method="post" action="<?= $this->escape($this->setupRestartUrl) ?>">
+                    <?= $this->csrfField ?>
+                    <button type="submit" class="btn"><?= pm_Locale::lmsg('restartSetupButton') ?></button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('settingsAwsSesCredentialsTitle') ?></h3>
+        </div>
+        <div class="ses-form-panel">
+            <details class="ses-guide ses-faq">
+                <summary class="ses-faq-summary">
+                    <span><?= pm_Locale::lmsg('awsCredentialsGuideTitle') ?></span>
+                </summary>
+                <div class="ses-faq-body">
+                    <div class="ses-guide-grid">
+                        <div>
+                            <p><?= pm_Locale::lmsg('awsCredentialsGuideIntro') ?></p>
+                            <ol class="ses-guide-list">
+                                <li><?= pm_Locale::lmsg('awsCredentialsStepIam') ?></li>
+                                <li><?= pm_Locale::lmsg('awsCredentialsStepAccessKey') ?></li>
+                                <li><?= pm_Locale::lmsg('awsCredentialsStepSmtp') ?></li>
+                            </ol>
+                        </div>
+                        <div>
+                            <p class="ses-guide-label"><?= pm_Locale::lmsg('awsIamPolicyLabel') ?></p>
+                            <pre class="ses-code">{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ses:ListEmailIdentities",
+        "ses:GetAccount",
+        "ses:CreateEmailIdentity",
+        "ses:GetEmailIdentity",
+        "ses:BatchGetMetricData",
+        "ses:PutEmailIdentityMailFromAttributes",
+        "ses:GetIdentityNotificationAttributes",
+        "ses:SetIdentityNotificationTopic",
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+        "sns:CreateTopic",
+        "sns:Subscribe",
+        "sns:ListSubscriptionsByTopic",
+        "sns:GetSubscriptionAttributes",
+        "sns:SetSubscriptionAttributes"
+      ],
+      "Resource": "*"
+    }
+  ]
+}</pre>
+                        </div>
+                    </div>
+                    <p class="ses-guide-note"><?= pm_Locale::lmsg('awsCredentialsGuideNote') ?></p>
+                    <p class="ses-guide-note"><?= pm_Locale::lmsg('awsIamTroubleshootingNote') ?></p>
+                </div>
+            </details>
+            <div class="ses-secret-status">
+                <span class="ses-badge" data-status="<?= $this->credentialStatus['awsAccessKey'] ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('awsAccessKeyLabel') ?> <?= $this->credentialStatus['awsAccessKey'] ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+                <span class="ses-badge" data-status="<?= $this->credentialStatus['awsSecretKey'] ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('awsSecretKeyLabel') ?> <?= $this->credentialStatus['awsSecretKey'] ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+                <span class="ses-badge" data-status="<?= $this->credentialStatus['smtpUsername'] ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('smtpUsernameLabel') ?> <?= $this->credentialStatus['smtpUsername'] ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+                <span class="ses-badge" data-status="<?= $this->credentialStatus['smtpPassword'] ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('smtpPasswordLabel') ?> <?= $this->credentialStatus['smtpPassword'] ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+            </div>
+            <?= $this->setupForm ?>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('settingsDeliverabilityDnsTitle') ?></h3>
+        </div>
+        <div class="ses-form-panel">
+            <?php if (empty($this->featureGates['auto_ses_on_create']['enabled'])): ?>
+                <?= $this->partial('_partials/feature-lock.phtml', array('title' => pm_Locale::lmsg('autoSesOnCreateLabel'), 'requiredPlan' => $this->featureGates['auto_ses_on_create']['required_plan'], 'upgradeUrl' => $this->upgradeUrl)) ?>
+            <?php endif; ?>
+            <?php if (empty($this->featureGates['sns_automation']['enabled'])): ?>
+                <?= $this->partial('_partials/feature-lock.phtml', array('title' => pm_Locale::lmsg('snsTopicArnLabel'), 'requiredPlan' => $this->featureGates['sns_automation']['required_plan'], 'upgradeUrl' => $this->upgradeUrl)) ?>
+            <?php endif; ?>
+            <?= $this->generalForm ?>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title">Cloudflare</h3>
+        </div>
+        <div class="ses-form-panel">
+            <?php if (empty($this->featureGates['cloudflare_dns']['enabled'])): ?>
+                <?= $this->partial('_partials/feature-lock.phtml', array('title' => pm_Locale::lmsg('cloudflarePageTitle'), 'requiredPlan' => $this->featureGates['cloudflare_dns']['required_plan'], 'upgradeUrl' => $this->upgradeUrl)) ?>
+            <?php elseif (empty($this->featureGates['cloudflare_sync_all']['enabled'])): ?>
+                <?= $this->partial('_partials/feature-lock.phtml', array('title' => pm_Locale::lmsg('cloudflareSyncAllRecords'), 'requiredPlan' => $this->featureGates['cloudflare_sync_all']['required_plan'], 'upgradeUrl' => $this->upgradeUrl, 'soft' => true)) ?>
+            <?php endif; ?>
+            <details class="ses-guide ses-faq">
+                <summary class="ses-faq-summary">
+                    <span><?= pm_Locale::lmsg('cloudflareTokenGuideTitle') ?></span>
+                </summary>
+                <div class="ses-faq-body">
+                    <ol class="ses-guide-list">
+                        <li><?= pm_Locale::lmsg('cloudflareTokenStepCreate') ?></li>
+                        <li><?= pm_Locale::lmsg('cloudflareTokenStepPermissions') ?></li>
+                        <li><?= pm_Locale::lmsg('cloudflareTokenStepScope') ?></li>
+                    </ol>
+                    <p class="ses-guide-note"><?= pm_Locale::lmsg('cloudflareTokenGuideNote') ?></p>
+                </div>
+            </details>
+            <div class="ses-secret-status">
+                <span class="ses-badge" data-status="<?= $this->credentialStatus['cloudflareToken'] ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('cloudflareTokenLabel') ?> <?= $this->credentialStatus['cloudflareToken'] ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+            </div>
+            <?= $this->cloudflareForm ?>
+        </div>
+    </section>
+</div>
+<script>
+(function () {
+    var labels = {
+        aws: <?= json_encode(pm_Locale::lmsg('testConnectionButton')) ?>,
+        general: <?= json_encode(pm_Locale::lmsg('saveButton')) ?>,
+        cloudflare: <?= json_encode(pm_Locale::lmsg('saveTokenButton')) ?>
+    };
+
+    document.querySelectorAll('.ses-manager-settings form').forEach(function (form) {
+        var marker = form.querySelector('input[name="settings_form"]');
+        var formName = marker ? marker.value : 'general';
+        var send = form.querySelector('button#btn-send, input#btn-send');
+        var cancel = form.querySelector('button#btn-cancel, input#btn-cancel');
+        var label = labels[formName] || labels.general;
+
+        if (send) {
+            if (send.tagName.toLowerCase() === 'input') {
+                if (!send.value) {
+                    send.value = label;
+                }
+            } else if (!send.textContent.trim()) {
+                send.textContent = label;
+            }
+            if (!send.getAttribute('aria-label')) {
+                send.setAttribute('aria-label', label);
+            }
+        }
+
+        if (cancel && !cancel.textContent.trim() && !cancel.value) {
+            cancel.style.display = 'none';
+            cancel.setAttribute('aria-hidden', 'true');
+        }
+    });
+})();
+</script>

@@ -1,0 +1,230 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<?php
+$snapshot = $this->snapshot;
+$ipReputation = $this->ipReputation;
+$blacklist = is_array($ipReputation) && isset($ipReputation['blacklist']) ? $ipReputation['blacklist'] : array();
+$asn = is_array($ipReputation) && isset($ipReputation['asn']) && is_array($ipReputation['asn']) ? $ipReputation['asn'] : array();
+$activeIpAlerts = $this->activeIpAlerts ?: array();
+$ipAlertEvents = $this->ipAlertEvents ?: array();
+$usagePercent = 0;
+if ($snapshot && (int) $snapshot['max_24_hour_send'] > 0) {
+    $usagePercent = min(100, ((int) $snapshot['sent_last_24_hours'] / (int) $snapshot['max_24_hour_send']) * 100);
+}
+$health = $snapshot ? strtolower($snapshot['health']) : 'unknown';
+$healthKey = in_array($health, array('excellent', 'warning', 'critical'), true)
+    ? 'reputationHealth' . ucfirst($health)
+    : 'reputationHealthUnknown';
+?>
+<div class="ses-page ses-manager-reputation">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+            <p class="ses-page-description"><?= pm_Locale::lmsg('reputationPageDescription') ?></p>
+        </div>
+        <form class="ses-inline-form" method="post" action="<?= $this->url(array('controller' => 'reputation', 'action' => 'refresh')) ?>">
+            <?= $this->csrfField ?>
+            <button type="submit" class="btn"><?= pm_Locale::lmsg('refreshAction') ?></button>
+        </form>
+    </div>
+
+    <?php if (!$snapshot): ?>
+        <section class="ses-panel">
+            <div class="ses-panel-body">
+                <p class="ses-empty"><?= pm_Locale::lmsg('reputationNoData') ?></p>
+            </div>
+        </section>
+    <?php else: ?>
+        <div class="ses-grid">
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('accountStatusLabel') ?></p>
+                <p class="ses-stat-value">
+                    <?= !empty($snapshot['production_access_enabled']) ? pm_Locale::lmsg('productionStatus') : pm_Locale::lmsg('sandboxStatus') ?>
+                </p>
+                <span class="ses-badge" data-status="<?= !empty($snapshot['production_access_enabled']) ? 'pass' : 'warning' ?>">
+                    <?= !empty($snapshot['production_access_enabled']) ? pm_Locale::lmsg('productionStatus') : pm_Locale::lmsg('sandboxStatus') ?>
+                </span>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('dailyUsageLabel') ?></p>
+                <p class="ses-stat-value"><?= number_format((int) $snapshot['sent_last_24_hours']) ?> <small>/ <?= number_format((int) $snapshot['max_24_hour_send']) ?></small></p>
+                <div class="ses-progress"><span style="width: <?= $this->escape($usagePercent) ?>%"></span></div>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('bounceRateLabel') ?></p>
+                <p class="ses-stat-value"><?= number_format((float) $snapshot['bounce_rate'], 2) ?><small>%</small></p>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('complaintRateLabel') ?></p>
+                <p class="ses-stat-value"><?= number_format((float) $snapshot['complaint_rate'], 2) ?><small>%</small></p>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('healthLabel') ?></p>
+                <p class="ses-stat-value"><?= pm_Locale::lmsg($healthKey) ?></p>
+                <span class="ses-badge" data-status="<?= $this->escape($health === 'excellent' ? 'pass' : ($health === 'warning' ? 'warning' : 'failed')) ?>">
+                    <?= $this->escape($snapshot['enforcement_status']) ?>
+                </span>
+            </div>
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('maxSendRateLabel') ?></p>
+                <p class="ses-stat-value"><?= number_format((float) $snapshot['max_send_rate'], 2) ?><small>/ <?= pm_Locale::lmsg('perSecondLabel') ?></small></p>
+            </div>
+        </div>
+
+        <?php if (empty($snapshot['production_access_enabled'])): ?>
+            <section class="ses-panel">
+                <div class="ses-panel-body ses-warning-note">
+                    <strong><?= pm_Locale::lmsg('sandboxWarningTitle') ?></strong>
+                    <p><?= pm_Locale::lmsg('sandboxWarningText') ?></p>
+                </div>
+            </section>
+        <?php endif; ?>
+    <?php endif; ?>
+
+    <?php if (!empty($this->ipReputationLocked)): ?>
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('ipReputationTitle') ?></h3>
+            </div>
+            <div class="ses-panel-body">
+                <?= $this->partial('_partials/feature-lock.phtml', array('title' => pm_Locale::lmsg('ipReputationTitle'), 'requiredPlan' => 'agency', 'upgradeUrl' => $this->upgradeUrl)) ?>
+            </div>
+        </section>
+    <?php else: ?>
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('ipReputationTitle') ?></h3>
+            <span class="ses-score <?= (int) $ipReputation['score'] >= 85 ? 'is-good' : ((int) $ipReputation['score'] >= 65 ? 'is-warning' : 'is-critical') ?>">
+                <?= $this->escape((int) $ipReputation['score']) ?> / 100
+            </span>
+        </div>
+        <div class="ses-panel-body">
+            <p class="ses-page-description"><?= $this->escape($ipReputation['message']) ?></p>
+            <?php if (!empty($ipReputation['ip'])): ?>
+                <div class="ses-grid">
+                    <div class="ses-stat">
+                        <p class="ses-stat-label"><?= pm_Locale::lmsg('ipAddressLabel') ?></p>
+                        <p class="ses-stat-value"><?= $this->escape($ipReputation['ip']) ?></p>
+                    </div>
+                    <div class="ses-stat">
+                        <p class="ses-stat-label"><?= pm_Locale::lmsg('reverseDnsTitle') ?></p>
+                        <p class="ses-stat-value"><small><?= $this->escape($ipReputation['reverseDns']['ptr'] ?: '-') ?></small></p>
+                        <span class="ses-badge" data-status="<?= $this->escape($ipReputation['reverseDns']['status']) ?>"><?= $this->escape($ipReputation['reverseDns']['message']) ?></span>
+                    </div>
+                    <div class="ses-stat">
+                        <p class="ses-stat-label"><?= pm_Locale::lmsg('forwardConfirmedLabel') ?></p>
+                        <p class="ses-stat-value"><?= !empty($ipReputation['reverseDns']['forwardConfirmed']) ? pm_Locale::lmsg('yesLabel') : pm_Locale::lmsg('noLabel') ?></p>
+                    </div>
+                    <div class="ses-stat">
+                        <p class="ses-stat-label"><?= pm_Locale::lmsg('smtpBannerTitle') ?></p>
+                        <p class="ses-stat-value"><small><?= $this->escape($ipReputation['smtpBanner']['banner'] ?: '-') ?></small></p>
+                        <span class="ses-badge" data-status="<?= $this->escape($ipReputation['smtpBanner']['status']) ?>"><?= $this->escape($ipReputation['smtpBanner']['message']) ?></span>
+                    </div>
+                    <div class="ses-stat">
+                        <p class="ses-stat-label"><?= pm_Locale::lmsg('heloTitle') ?></p>
+                        <p class="ses-stat-value"><small><?= $this->escape($ipReputation['mailIdentity']['hostname'] ?: '-') ?></small></p>
+                        <span class="ses-badge" data-status="<?= $this->escape($ipReputation['mailIdentity']['status']) ?>"><?= $this->escape($ipReputation['mailIdentity']['message']) ?></span>
+                    </div>
+                    <div class="ses-stat">
+                        <p class="ses-stat-label"><?= pm_Locale::lmsg('lastCheckedColumn') ?></p>
+                        <p class="ses-stat-value"><small><?= $this->escape($ipReputation['checkedAt']) ?></small></p>
+                    </div>
+                    <div class="ses-stat">
+                        <p class="ses-stat-label"><?= pm_Locale::lmsg('asnLabel') ?></p>
+                        <p class="ses-stat-value"><small><?= $this->escape($asn['asn'] ?? '-') ?></small></p>
+                        <span class="ses-badge" data-status="<?= $this->escape(($asn['status'] ?? 'unknown') === 'pass' ? 'pass' : 'warning') ?>"><?= $this->escape($asn['source'] ?? '-') ?></span>
+                    </div>
+                    <div class="ses-stat">
+                        <p class="ses-stat-label"><?= pm_Locale::lmsg('providerLabel') ?></p>
+                        <p class="ses-stat-value"><small><?= $this->escape(($asn['provider'] ?? '') ?: ($asn['name'] ?? '-')) ?></small></p>
+                        <span class="ses-badge" data-status="<?= !empty($asn['knownDatacenter']) ? 'warning' : 'pass' ?>"><?= !empty($asn['knownDatacenter']) ? pm_Locale::lmsg('datacenterIpYes') : pm_Locale::lmsg('datacenterIpNo') ?></span>
+                    </div>
+                    <div class="ses-stat">
+                        <p class="ses-stat-label"><?= pm_Locale::lmsg('countryLabel') ?></p>
+                        <p class="ses-stat-value"><small><?= $this->escape($asn['country'] ?? '-') ?></small></p>
+                        <span class="ses-badge" data-status="optional"><?= $this->escape($asn['registry'] ?? '-') ?></span>
+                    </div>
+                </div>
+                <?php if (!empty($asn['note'])): ?>
+                    <p class="ses-guide-note"><?= $this->escape($asn['note']) ?></p>
+                <?php endif; ?>
+            <?php else: ?>
+                <p class="ses-empty"><?= $this->escape($ipReputation['message']) ?></p>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('blacklistTitle') ?></h3>
+        </div>
+        <div class="ses-panel-body">
+            <p class="ses-page-description"><?= pm_Locale::lmsg('blacklistDescription') ?></p>
+            <?php if (!empty($blacklist['message'])): ?>
+                <p class="ses-empty"><?= $this->escape($blacklist['message']) ?></p>
+            <?php else: ?>
+                <p><strong><?= pm_Locale::lmsg('ipAddressLabel') ?>:</strong> <?= $this->escape($blacklist['ip']) ?></p>
+                <div class="ses-table-wrap">
+                    <table class="data-table ses-table">
+                        <thead>
+                            <tr>
+                                <th><?= pm_Locale::lmsg('providerColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('statusColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('responseColumn') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($blacklist['checks'] as $check): ?>
+                                <tr>
+                                    <td><?= $this->escape($check['provider']) ?></td>
+                                    <td><span class="ses-badge" data-status="<?= $check['listed'] ? ($check['severity'] === 'critical' ? 'failed' : 'warning') : 'pass' ?>"><?= $check['listed'] ? pm_Locale::lmsg('listedStatus') : pm_Locale::lmsg('clearStatus') ?></span></td>
+                                    <td><?= $this->escape($check['response'] ?: '-') ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('ipAlertHistoryTitle') ?></h3>
+            <span class="ses-badge" data-status="<?= empty($activeIpAlerts) ? 'pass' : 'failed' ?>">
+                <?= empty($activeIpAlerts) ? pm_Locale::lmsg('noActiveAlerts') : count($activeIpAlerts) . ' ' . pm_Locale::lmsg('activeAlertsLabel') ?>
+            </span>
+        </div>
+        <div class="ses-panel-body">
+            <p class="ses-page-description"><?= pm_Locale::lmsg('ipAlertHistoryDescription') ?></p>
+            <?php if (empty($ipAlertEvents)): ?>
+                <p class="ses-empty"><?= pm_Locale::lmsg('noIpAlertEvents') ?></p>
+            <?php else: ?>
+                <div class="ses-table-wrap">
+                    <table class="data-table ses-table">
+                        <thead>
+                            <tr>
+                                <th><?= pm_Locale::lmsg('dateColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('ipAddressLabel') ?></th>
+                                <th><?= pm_Locale::lmsg('providerColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('eventTypeColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('messageColumn') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($ipAlertEvents as $event): ?>
+                                <tr>
+                                    <td><?= $this->escape($event['created_at']) ?></td>
+                                    <td><?= $this->escape($event['ip_address'] ?: '-') ?></td>
+                                    <td><?= $this->escape($event['provider'] ?: '-') ?></td>
+                                    <td><span class="ses-badge" data-status="<?= $this->escape($event['event_type'] === 'recovered' ? 'pass' : ($event['event_type'] === 'reminder' ? 'warning' : 'failed')) ?>"><?= $this->escape($event['event_type']) ?></span></td>
+                                    <td class="ses-long"><?= $this->escape($event['message']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+    <?php endif; ?>
+</div>

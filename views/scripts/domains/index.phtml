@@ -1,0 +1,51 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-domains">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+            <p class="ses-page-description"><?= pm_Locale::lmsg('domainsPageDescription') ?></p>
+        </div>
+    </div>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('domainsPageTitle') ?></h3>
+        </div>
+        <div class="ses-table-wrap">
+            <table class="data-table ses-table">
+                <thead>
+                    <tr>
+                        <th><?= pm_Locale::lmsg('domainColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('verificationColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('scoreColumn') ?></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($this->domains as $row): ?>
+                        <?php
+                        $status = $row['tracked'] ? $row['tracked']['verification_status'] : pm_Locale::lmsg('notStarted');
+                        $score = $row['tracked'] ? (int) $row['tracked']['score'] : null;
+                        ?>
+                    <tr>
+                        <td><?= $this->escape($row['domainName']) ?></td>
+                        <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($status)) ?>"><?= $this->escape($status) ?></span></td>
+                        <td>
+                            <?php if ($score === null): ?>
+                                -
+                            <?php else: ?>
+                                <span class="ses-score <?= $score >= 70 ? 'is-good' : ($score >= 50 ? 'is-warning' : 'is-critical') ?>"><?= $this->escape($score) ?></span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <a class="ses-link-button" href="<?= $this->url(array('controller' => 'domains', 'action' => 'view', 'id' => $row['pleskDomainId'])) ?>">
+                                <?= pm_Locale::lmsg('manageAction') ?>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

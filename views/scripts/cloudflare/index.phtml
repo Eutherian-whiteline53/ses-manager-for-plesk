@@ -1,0 +1,62 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-cloudflare">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+            <p class="ses-page-description"><?= pm_Locale::lmsg('cloudflarePageDescription') ?></p>
+        </div>
+        <a class="ses-link-button" href="<?= $this->url(array('controller' => 'settings', 'action' => 'index')) ?>">
+            <?= pm_Locale::lmsg('cloudflareSettingsAction') ?>
+        </a>
+    </div>
+
+    <?php if ($this->hasToken): ?>
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('domainsPageTitle') ?></h3>
+                <span class="ses-badge" data-status="enabled">
+                    <?= $this->escape($this->syncMode === 'all' ? pm_Locale::lmsg('cloudflareSyncAllRecords') : pm_Locale::lmsg('cloudflareSyncSesOnly')) ?>
+                </span>
+            </div>
+            <?php if (empty($this->domains)): ?>
+                <div class="ses-empty"><?= pm_Locale::lmsg('cloudflareNoDomains') ?></div>
+            <?php else: ?>
+                <div class="ses-table-wrap">
+                    <table class="data-table ses-table">
+                        <thead>
+                            <tr>
+                                <th><?= pm_Locale::lmsg('domainColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('cloudflareSyncModeLabel') ?></th>
+                                <th><?= pm_Locale::lmsg('statusColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('actionColumn') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($this->domains as $domain): ?>
+                            <tr>
+                                <td><?= $this->escape($domain['domain_name']) ?></td>
+                                <td><?= $this->escape($this->syncMode === 'all' ? pm_Locale::lmsg('cloudflareSyncAllRecords') : pm_Locale::lmsg('cloudflareSyncSesOnly')) ?></td>
+                                <td><span class="ses-badge" data-status="enabled"><?= pm_Locale::lmsg('enabled') ?></span></td>
+                                <td>
+                                    <a class="ses-link-button" href="<?= $this->url(array('controller' => 'cloudflare', 'action' => 'preview', 'id' => $domain['id'])) ?>">
+                                        <?= pm_Locale::lmsg('previewChangesButton') ?>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </section>
+    <?php else: ?>
+        <section class="ses-panel">
+            <div class="ses-panel-body">
+                <p class="ses-manager-status-warning"><?= pm_Locale::lmsg('cloudflareTokenMissing') ?></p>
+                <a class="ses-link-button" href="<?= $this->url(array('controller' => 'settings', 'action' => 'index')) ?>">
+                    <?= pm_Locale::lmsg('cloudflareSettingsAction') ?>
+                </a>
+            </div>
+        </section>
+    <?php endif; ?>
+</div>

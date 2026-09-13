@@ -1,0 +1,39 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-advanced-settings">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+            <p class="ses-page-description"><?= pm_Locale::lmsg('advancedSettingsDescription') ?></p>
+        </div>
+    </div>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <div>
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('advancedRetentionTitle') ?></h3>
+                <p class="ses-page-description"><?= pm_Locale::lmsg('advancedRetentionDescription') ?></p>
+            </div>
+        </div>
+        <div class="ses-form-panel">
+            <?= $this->form ?>
+            <form method="post" action="<?= $this->escape($this->cleanupUrl) ?>" class="ses-inline-form">
+                <?= $this->csrfField ?>
+                <button type="submit" class="btn"><?= pm_Locale::lmsg('advancedRunCleanupButton') ?></button>
+            </form>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <div>
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('supportBundleTitle') ?></h3>
+                <p class="ses-page-description"><?= pm_Locale::lmsg('supportBundleDescription') ?></p>
+            </div>
+            <a class="btn btn-primary" href="<?= $this->escape($this->downloadUrl) ?>"><?= pm_Locale::lmsg('downloadSupportBundleButton') ?></a>
+        </div>
+        <div class="ses-panel-body">
+            <p class="ses-guide-note"><?= pm_Locale::lmsg('supportBundlePrivacyNote') ?></p>
+            <textarea class="ses-support-preview" readonly rows="28"><?= $this->escape($this->supportPreview) ?></textarea>
+        </div>
+    </section>
+</div>

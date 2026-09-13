@@ -1,0 +1,83 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-domain-detail">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->domainName) ?></h2>
+            <?php if ($this->tracked): ?>
+                <p class="ses-page-description">
+                    <?= pm_Locale::lmsg('verificationStatusLabel') ?>:
+                    <span class="ses-badge" data-status="<?= $this->escape(strtolower($this->tracked['verification_status'])) ?>"><?= $this->escape($this->tracked['verification_status']) ?></span>
+                </p>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php if (!$this->hasAwsCredentials): ?>
+        <p class="ses-manager-status-warning"><?= pm_Locale::lmsg('awsNotConfigured') ?></p>
+    <?php endif; ?>
+
+    <?php if ($this->autoJob): ?>
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('autoJobStatusTitle') ?></h3>
+                <span class="ses-badge" data-status="<?= $this->escape(strtolower($this->autoJob['status'])) ?>"><?= $this->escape($this->autoJob['status']) ?></span>
+            </div>
+            <div class="ses-panel-body">
+                <p class="ses-page-description"><?= $this->escape($this->autoJob['last_error'] ?: pm_Locale::lmsg('autoJobNoMessage')) ?></p>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <?php if (!$this->tracked): ?>
+        <section class="ses-panel">
+            <div class="ses-panel-body">
+                <form method="post" action="<?= $this->url(array('controller' => 'domains', 'action' => 'create-identity', 'id' => $this->pleskDomainId)) ?>">
+                    <?= $this->csrfField ?>
+                    <button type="submit" class="btn btn-primary"><?= pm_Locale::lmsg('createIdentityButton') ?></button>
+                </form>
+            </div>
+        </section>
+    <?php else: ?>
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('dnsRecordsTitle') ?></h3>
+            </div>
+            <div class="ses-table-wrap">
+                <table class="data-table ses-table">
+                    <thead>
+                        <tr>
+                            <th><?= pm_Locale::lmsg('purposeColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('typeColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('nameColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('valueColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('statusColumn') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->records as $record): ?>
+                        <?php
+                        $status = strtolower($record['status']);
+                        $statusLabel = $status === 'skipped' ? 'synced' : $record['status'];
+                        $statusBadge = $status === 'skipped' ? 'applied' : $status;
+                        ?>
+                        <tr>
+                            <td><span class="ses-badge"><?= $this->escape($record['purpose']) ?></span></td>
+                            <td><?= $this->escape($record['type']) ?></td>
+                            <td class="ses-long"><?= $this->escape($record['name']) ?></td>
+                            <td class="ses-long"><?= $this->escape($record['value']) ?></td>
+                            <td><span class="ses-badge" data-status="<?= $this->escape($statusBadge) ?>"><?= $this->escape($statusLabel) ?></span></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="ses-actions">
+            <form class="ses-inline-form" method="post" action="<?= $this->url(array('controller' => 'domains', 'action' => 'apply-dns', 'id' => $this->pleskDomainId)) ?>">
+                <?= $this->csrfField ?>
+                <button type="submit" class="btn btn-primary"><?= pm_Locale::lmsg('applyDnsButton') ?></button>
+            </form>
+        </div>
+    <?php endif; ?>
+</div>

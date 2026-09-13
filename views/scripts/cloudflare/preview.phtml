@@ -1,0 +1,54 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-cloudflare-preview">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->domain['domain_name']) ?></h2>
+            <p class="ses-page-description">
+                <?= pm_Locale::lmsg('cloudflareZoneLabel') ?>:
+                <?= $this->escape($this->zone['name']) ?>
+            </p>
+        </div>
+    </div>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('previewChangesButton') ?></h3>
+        </div>
+        <div class="ses-table-wrap">
+            <table class="data-table ses-table">
+                <thead>
+                    <tr>
+                        <th><?= pm_Locale::lmsg('purposeColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('typeColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('nameColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('valueColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('statusColumn') ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($this->plans as $plan): ?>
+                    <?php
+                    $status = strtolower($plan->status);
+                    $statusLabel = $status === 'skipped' ? 'synced' : $plan->status;
+                    $statusBadge = $status === 'skipped' ? 'applied' : $status;
+                    ?>
+                    <tr>
+                        <td><span class="ses-badge"><?= $this->escape($plan->record->purpose) ?></span></td>
+                        <td><?= $this->escape($plan->record->type) ?></td>
+                        <td class="ses-long"><?= $this->escape($plan->record->name) ?></td>
+                        <td class="ses-long"><?= $this->escape($plan->record->value) ?></td>
+                        <td><span class="ses-badge" data-status="<?= $this->escape($statusBadge) ?>"><?= $this->escape($statusLabel) ?></span></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+	<div class="ses-actions">
+	    <form class="ses-inline-form" method="post" action="<?= $this->url(array('controller' => 'cloudflare', 'action' => 'apply', 'id' => $this->domain['id'])) ?>">
+	        <?= $this->csrfField ?>
+	        <button type="submit" class="btn btn-primary"><?= pm_Locale::lmsg('applyChangesButton') ?></button>
+	    </form>
+	</div>
+</div>

@@ -1,0 +1,30 @@
+<?php if (!empty($this->navGroups)): ?>
+    <link rel="stylesheet" href="<?= $this->escape(pm_Context::getBaseUrl() . 'css/app.css?v=20260613-ui') ?>">
+    <nav class="ses-manager-nav" aria-label="<?= $this->escape(pm_Locale::lmsg('navTitle')) ?>">
+        <?php foreach ($this->navGroups as $group): ?>
+            <div class="ses-manager-nav-group<?= $group['active'] ? ' active' : '' ?>">
+                <span class="ses-manager-nav-label"><?= $this->escape($group['label']) ?></span>
+                <ul class="ses-manager-nav-list">
+                    <?php foreach ($group['items'] as $item): ?>
+                        <li<?= $item['active'] ? ' class="active"' : '' ?>>
+                            <a href="<?= $this->escape($item['url']) ?>"><?= $this->escape($item['label']) ?></a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endforeach; ?>
+    </nav>
+<?php elseif (!empty($this->navItems)): ?>
+    <link rel="stylesheet" href="<?= $this->escape(pm_Context::getBaseUrl() . 'css/app.css?v=20260613-ui') ?>">
+    <nav class="ses-manager-nav" aria-label="<?= $this->escape(pm_Locale::lmsg('navTitle')) ?>">
+        <div class="ses-manager-nav-group active">
+            <ul class="ses-manager-nav-list">
+                <?php foreach ($this->navItems as $item): ?>
+                    <li<?= $item['active'] ? ' class="active"' : '' ?>>
+                        <a href="<?= $this->escape($item['url']) ?>"><?= $this->escape($item['label']) ?></a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    </nav>
+<?php endif; ?>

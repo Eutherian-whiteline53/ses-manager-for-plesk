@@ -1,0 +1,88 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-smarthost">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+            <p class="ses-page-description"><?= pm_Locale::lmsg('smarthostPageDescription') ?></p>
+        </div>
+    </div>
+
+    <div class="ses-grid">
+        <div class="ses-stat">
+            <p class="ses-stat-label"><?= pm_Locale::lmsg('smarthostStatusLabel') ?></p>
+            <p class="ses-stat-value">
+                <span class="ses-badge" data-status="<?= $this->smarthostEnabled ? 'enabled' : 'disabled' ?>">
+                    <?= $this->smarthostEnabled ? pm_Locale::lmsg('enabled') : pm_Locale::lmsg('disabled') ?>
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('smarthostPreviewTitle') ?></h3>
+        </div>
+        <div class="ses-table-wrap">
+            <table class="data-table ses-table ses-kv">
+                <tbody>
+                    <tr>
+                        <th><?= pm_Locale::lmsg('hostLabel') ?></th>
+                        <td class="ses-long"><?= $this->escape($this->preview->host) ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= pm_Locale::lmsg('portLabel') ?></th>
+                        <td><?= $this->escape($this->preview->port) ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= pm_Locale::lmsg('usernameLabel') ?></th>
+                        <td class="ses-long"><?= $this->escape($this->preview->username ?: '-') ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= pm_Locale::lmsg('encryptionLabel') ?></th>
+                        <td><span class="ses-badge"><?= $this->escape($this->preview->encryption) ?></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <?php if (!empty($this->currentConfig['enabled'])): ?>
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('currentSmarthostTitle') ?></h3>
+            </div>
+            <div class="ses-table-wrap">
+                <table class="data-table ses-table ses-kv">
+                    <tbody>
+                        <tr>
+                            <th><?= pm_Locale::lmsg('hostLabel') ?></th>
+                            <td><?= $this->escape($this->currentConfig['host']) ?></td>
+                        </tr>
+                        <tr>
+                            <th><?= pm_Locale::lmsg('portLabel') ?></th>
+                            <td><?= $this->escape($this->currentConfig['port']) ?></td>
+                        </tr>
+                        <tr>
+                            <th><?= pm_Locale::lmsg('authenticationLabel') ?></th>
+                            <td><span class="ses-badge" data-status="<?= !empty($this->currentConfig['auth_enabled']) ? 'enabled' : 'disabled' ?>"><?= !empty($this->currentConfig['auth_enabled']) ? pm_Locale::lmsg('enabled') : pm_Locale::lmsg('disabled') ?></span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <div class="ses-actions">
+        <form class="ses-inline-form" method="post" action="<?= $this->url(array('controller' => 'smarthost', 'action' => 'apply')) ?>">
+            <?= $this->csrfField ?>
+            <button type="submit" class="btn btn-primary"><?= pm_Locale::lmsg('applySmarthostButton') ?></button>
+        </form>
+
+        <?php if ($this->hasSnapshot): ?>
+            <form class="ses-inline-form" method="post" action="<?= $this->url(array('controller' => 'smarthost', 'action' => 'rollback')) ?>">
+                <?= $this->csrfField ?>
+                <button type="submit" class="btn"><?= pm_Locale::lmsg('rollbackButton') ?></button>
+            </form>
+        <?php endif; ?>
+    </div>
+</div>

@@ -1,0 +1,70 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-bulk-verify">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+        </div>
+    </div>
+
+    <?php if ($this->activeJob): ?>
+        <p class="ses-manager-status-warning"><?= pm_Locale::lmsg('bulkVerifyAlreadyRunning') ?></p>
+    <?php elseif (empty($this->untracked)): ?>
+        <section class="ses-panel"><div class="ses-empty"><?= pm_Locale::lmsg('bulkVerifyNoDomains') ?></div></section>
+    <?php else: ?>
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('domainsPageTitle') ?></h3>
+            </div>
+            <form method="post" action="<?= $this->url(array('controller' => 'bulk-verify', 'action' => 'start')) ?>">
+                <?= $this->csrfField ?>
+                <div class="ses-table-wrap">
+                    <table class="data-table ses-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th><?= pm_Locale::lmsg('domainColumn') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($this->untracked as $domain): ?>
+                            <tr>
+                                <td><input type="checkbox" name="domain_id[]" value="<?= $this->escape($domain['pleskDomainId']) ?>"></td>
+                                <td><?= $this->escape($domain['domainName']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="ses-panel-body">
+                    <button type="submit" class="btn btn-primary"><?= pm_Locale::lmsg('bulkVerifyStartButton') ?></button>
+                </div>
+            </form>
+        </section>
+    <?php endif; ?>
+
+    <?php if (!empty($this->recentJobs)): ?>
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('bulkVerifyHistoryTitle') ?></h3>
+            </div>
+            <div class="ses-table-wrap">
+                <table class="data-table ses-table">
+                    <thead>
+                        <tr>
+                            <th><?= pm_Locale::lmsg('statusColumn') ?></th>
+                            <th><?= pm_Locale::lmsg('dateColumn') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->recentJobs as $job): ?>
+                        <tr>
+                            <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($job['status'])) ?>"><?= $this->escape($job['status']) ?></span></td>
+                            <td><?= $this->escape($job['scheduled_at']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    <?php endif; ?>
+</div>

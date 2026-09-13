@@ -1,0 +1,243 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<?php
+$steps = $this->steps;
+$stepKeys = array_keys($steps);
+$currentIndex = array_search($this->step, $stepKeys, true);
+$settings = $this->settings;
+$snapshot = $this->snapshot['snapshot'] ?? null;
+$awsCredentials = $this->awsCredentials;
+$smtpCredentials = $this->smtpCredentials;
+$featureGates = $this->featureGates;
+$isCompleted = !empty($settings['setup_completed']);
+$showWizard = !$isCompleted;
+$progress = count($stepKeys) > 0 ? (($currentIndex + 1) / count($stepKeys)) * 100 : 0;
+?>
+<div class="ses-page ses-manager-setup">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+            <p class="ses-page-description"><?= pm_Locale::lmsg('setupDescription') ?></p>
+        </div>
+    </div>
+
+    <?= $this->partial('_partials/ses-connection.phtml', array('connection' => $this->sesConnection)) ?>
+
+    <?php if ($isCompleted && $this->step === 'welcome'): ?>
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('setupCompletedTitle') ?></h3>
+            </div>
+            <div class="ses-panel-body">
+                <p class="ses-manager-status-ok"><?= pm_Locale::lmsg('setupCompletedDescription') ?></p>
+                <div class="ses-secret-status">
+                    <span class="ses-badge" data-status="<?= $this->hasAwsCredentials ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('setupBadgeAwsApi') ?> <?= $this->hasAwsCredentials ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+                    <span class="ses-badge" data-status="<?= $this->hasSmtpCredentials ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('setupBadgeSesSmtp') ?> <?= $this->hasSmtpCredentials ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+                    <span class="ses-badge" data-status="<?= !empty($settings['sns_topic_arn']) ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('setupBadgeSns') ?> <?= !empty($settings['sns_topic_arn']) ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('optionalLabel') ?></span>
+                    <span class="ses-badge" data-status="<?= $this->hasCloudflareToken ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('setupBadgeCloudflare') ?> <?= $this->hasCloudflareToken ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('optionalLabel') ?></span>
+                    <span class="ses-badge" data-status="<?= !empty($settings['auto_ses_on_create']) ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('setupBadgeAutoSes') ?> <?= !empty($settings['auto_ses_on_create']) ? pm_Locale::lmsg('enabled') : pm_Locale::lmsg('disabled') ?></span>
+                </div>
+                <div class="ses-action-row">
+                    <a class="btn btn-primary" href="<?= $this->escape($this->domainsUrl) ?>"><?= pm_Locale::lmsg('goToDomainsButton') ?></a>
+                    <a class="btn" href="<?= $this->escape($this->settingsUrl) ?>"><?= pm_Locale::lmsg('goToSettingsButton') ?></a>
+                    <form method="post" action="<?= $this->escape($this->restartUrl) ?>">
+                        <?= $this->csrfField ?>
+                        <button type="submit" class="btn"><?= pm_Locale::lmsg('restartSetupButton') ?></button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <?php if ($showWizard): ?>
+    <section class="ses-panel ses-wizard-panel" style="--ses-wizard-progress: <?= $this->escape($progress) ?>%;">
+        <div class="ses-panel-header">
+            <div>
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg($steps[$this->step]['title']) ?></h3>
+                <p class="ses-page-description"><?= pm_Locale::lmsg($steps[$this->step]['description']) ?></p>
+            </div>
+            <span class="ses-badge" data-status="optional"><?= $this->escape($this->stepIndex) ?> / <?= $this->escape($this->stepCount) ?></span>
+        </div>
+
+        <div id="setup-wizard" class="ses-wizard-layout">
+            <aside class="ses-wizard-nav" aria-label="<?= $this->escape(pm_Locale::lmsg('setupWizardTitle')) ?>">
+                <?php foreach ($steps as $stepId => $step): ?>
+                    <?php
+                    $index = array_search($stepId, $stepKeys, true);
+                    $state = $index < $currentIndex ? 'complete' : ($index === $currentIndex ? 'active' : 'pending');
+                    ?>
+                    <a class="ses-wizard-step is-<?= $this->escape($state) ?>" href="<?= $this->escape($this->stepUrls[$stepId]) ?>">
+                        <span><?= $this->escape($index + 1) ?></span>
+                        <strong><?= pm_Locale::lmsg($step['title']) ?></strong>
+                    </a>
+                <?php endforeach; ?>
+            </aside>
+
+            <div class="ses-wizard-content">
+                <form method="post" action="<?= $this->escape($this->formAction) ?>">
+                    <?= $this->csrfField ?>
+                    <input type="hidden" name="step" value="<?= $this->escape($this->step) ?>">
+
+                    <?php if ($this->step === 'welcome'): ?>
+                        <div class="ses-wizard-intro">
+                            <p><?= pm_Locale::lmsg('setupWelcomeText') ?></p>
+                            <div class="ses-warning-note ses-cost-notice">
+                                <strong><?= pm_Locale::lmsg('awsCostNoticeTitle') ?></strong>
+                                <p><?= pm_Locale::lmsg('awsCostNoticeText') ?></p>
+                                <p><?= pm_Locale::lmsg('awsCostNoticeExample') ?></p>
+                            </div>
+                            <div class="ses-legal-acceptance">
+                                <label class="ses-checkbox-field">
+                                    <input type="checkbox" name="accept_eula" value="1" <?= $this->settings['eula_version'] === \Library\Repository\SettingsRepository::EULA_VERSION && !empty($this->settings['eula_accepted_at']) ? 'checked' : '' ?>>
+                                    <span>
+                                        <strong><?= pm_Locale::lmsg('setupAcceptEulaTitle') ?></strong>
+                                        <small><?= sprintf(pm_Locale::lmsg('setupAcceptEulaDescription'), '<a href="' . $this->escape($this->eulaUrl) . '" target="_blank" rel="noopener noreferrer">', '</a>') ?></small>
+                                    </span>
+                                </label>
+                                <label class="ses-checkbox-field">
+                                    <input type="checkbox" name="accept_privacy" value="1" <?= $this->settings['privacy_version'] === \Library\Repository\SettingsRepository::PRIVACY_VERSION && !empty($this->settings['privacy_accepted_at']) ? 'checked' : '' ?>>
+                                    <span>
+                                        <strong><?= pm_Locale::lmsg('setupAcceptPrivacyTitle') ?></strong>
+                                        <small><?= sprintf(pm_Locale::lmsg('setupAcceptPrivacyDescription'), '<a href="' . $this->escape($this->privacyUrl) . '" target="_blank" rel="noopener noreferrer">', '</a>') ?></small>
+                                    </span>
+                                </label>
+                                <?php if (!empty($this->settings['eula_accepted_at']) && !empty($this->settings['privacy_accepted_at'])): ?>
+                                    <p class="ses-legal-accepted-note"><?= $this->escape(sprintf(pm_Locale::lmsg('setupLegalAcceptedAt'), $this->settings['eula_accepted_at'])) ?></p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="ses-secret-status">
+                                <span class="ses-badge" data-status="<?= $this->hasAwsCredentials ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('setupBadgeAwsApi') ?> <?= $this->hasAwsCredentials ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+                                <span class="ses-badge" data-status="<?= $this->hasSmtpCredentials ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('setupBadgeSesSmtp') ?> <?= $this->hasSmtpCredentials ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span>
+                                <span class="ses-badge" data-status="<?= !empty($settings['setup_completed']) ? 'enabled' : 'disabled' ?>"><?= pm_Locale::lmsg('setupCompletedTitle') ?> <?= !empty($settings['setup_completed']) ? pm_Locale::lmsg('yesLabel') : pm_Locale::lmsg('noLabel') ?></span>
+                            </div>
+                        </div>
+                    <?php elseif ($this->step === 'region'): ?>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('regionLabel') ?></span>
+                            <input type="text" name="region" value="<?= $this->escape($settings['default_region']) ?>" required>
+                            <small><?= pm_Locale::lmsg('regionHint') ?></small>
+                        </label>
+                    <?php elseif ($this->step === 'aws'): ?>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('awsAccessKeyLabel') ?></span>
+                            <input type="text" name="aws_access_key" value="" autocomplete="off">
+                            <small><?= $this->hasAwsCredentials ? pm_Locale::lmsg('leaveBlankToKeep') : pm_Locale::lmsg('setupRequiredFieldHint') ?></small>
+                        </label>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('awsSecretKeyLabel') ?></span>
+                            <input type="password" name="aws_secret_key" value="" autocomplete="new-password">
+                            <small><?= $this->hasAwsCredentials ? pm_Locale::lmsg('leaveBlankToKeep') : pm_Locale::lmsg('setupRequiredFieldHint') ?></small>
+                        </label>
+                    <?php elseif ($this->step === 'sandbox'): ?>
+                        <div class="ses-grid">
+                            <div class="ses-stat">
+                                <p class="ses-stat-label"><?= pm_Locale::lmsg('accountStatusLabel') ?></p>
+                                <p class="ses-stat-value"><?= $snapshot ? (!empty($snapshot['production_access_enabled']) ? pm_Locale::lmsg('productionStatus') : pm_Locale::lmsg('sandboxStatus')) : pm_Locale::lmsg('unknownLabel') ?></p>
+                            </div>
+                            <div class="ses-stat">
+                                <p class="ses-stat-label"><?= pm_Locale::lmsg('sendingStatusLabel') ?></p>
+                                <p class="ses-stat-value"><?= $snapshot ? (!empty($snapshot['sending_enabled']) ? pm_Locale::lmsg('enabled') : pm_Locale::lmsg('disabled')) : pm_Locale::lmsg('unknownLabel') ?></p>
+                            </div>
+                        </div>
+                    <?php elseif ($this->step === 'smtp'): ?>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('smtpUsernameLabel') ?></span>
+                            <input type="text" name="smtp_username" value="" autocomplete="off">
+                            <small><?= $this->hasSmtpCredentials ? pm_Locale::lmsg('leaveBlankToKeep') : pm_Locale::lmsg('setupRequiredFieldHint') ?></small>
+                        </label>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('smtpPasswordLabel') ?></span>
+                            <input type="password" name="smtp_password" value="" autocomplete="new-password">
+                            <small><?= $this->hasSmtpCredentials ? pm_Locale::lmsg('leaveBlankToKeep') : pm_Locale::lmsg('setupRequiredFieldHint') ?></small>
+                        </label>
+                        <p class="ses-guide-note"><?= $this->escape(sprintf('email-smtp.%s.amazonaws.com:587 STARTTLS', $settings['default_region'])) ?></p>
+                    <?php elseif ($this->step === 'dns'): ?>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('mailFromSubdomainLabel') ?></span>
+                            <input type="text" name="mail_from_subdomain" value="<?= $this->escape($settings['mail_from_subdomain']) ?>" required>
+                            <small><?= pm_Locale::lmsg('mailFromSubdomainHint') ?></small>
+                        </label>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('dmarcPolicyLabel') ?></span>
+                            <select name="default_dmarc_policy">
+                                <?php foreach (array('none', 'quarantine', 'reject') as $policy): ?>
+                                    <option value="<?= $this->escape($policy) ?>" <?= $settings['default_dmarc_policy'] === $policy ? 'selected' : '' ?>><?= $this->escape($policy) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </label>
+                    <?php elseif ($this->step === 'automation'): ?>
+                        <?php if (empty($featureGates['auto_ses_on_create']['enabled'])): ?>
+                            <?= $this->partial('_partials/feature-lock.phtml', array('title' => pm_Locale::lmsg('autoSesOnCreateLabel'), 'requiredPlan' => $featureGates['auto_ses_on_create']['required_plan'], 'upgradeUrl' => $this->upgradeUrl)) ?>
+                        <?php endif; ?>
+                        <label class="ses-checkbox-field">
+                            <input type="checkbox" name="auto_ses_on_create" value="1" <?= !empty($settings['auto_ses_on_create']) ? 'checked' : '' ?> <?= empty($featureGates['auto_ses_on_create']['enabled']) ? 'disabled' : '' ?>>
+                            <span>
+                                <strong><?= pm_Locale::lmsg('autoSesOnCreateLabel') ?></strong>
+                                <small><?= pm_Locale::lmsg('autoSesOnCreateHint') ?></small>
+                            </span>
+                        </label>
+                    <?php elseif ($this->step === 'cloudflare'): ?>
+                        <?php if (empty($featureGates['cloudflare_dns']['enabled'])): ?>
+                            <?= $this->partial('_partials/feature-lock.phtml', array('title' => pm_Locale::lmsg('cloudflarePageTitle'), 'requiredPlan' => $featureGates['cloudflare_dns']['required_plan'], 'upgradeUrl' => $this->upgradeUrl)) ?>
+                        <?php elseif (empty($featureGates['cloudflare_sync_all']['enabled'])): ?>
+                            <?= $this->partial('_partials/feature-lock.phtml', array('title' => pm_Locale::lmsg('cloudflareSyncAllRecords'), 'requiredPlan' => $featureGates['cloudflare_sync_all']['required_plan'], 'upgradeUrl' => $this->upgradeUrl, 'soft' => true)) ?>
+                        <?php endif; ?>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('cloudflareTokenLabel') ?></span>
+                            <input type="password" name="cloudflare_token" value="" autocomplete="new-password" <?= empty($featureGates['cloudflare_dns']['enabled']) ? 'disabled' : '' ?>>
+                            <small><?= $this->hasCloudflareToken ? pm_Locale::lmsg('leaveBlankToKeep') : pm_Locale::lmsg('setupCloudflareTokenHint') ?></small>
+                        </label>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('cloudflareAccountIdLabel') ?></span>
+                            <input type="text" name="cloudflare_account_id" value="<?= $this->escape((string) $settings['cloudflare_account_id']) ?>" <?= empty($featureGates['cloudflare_dns']['enabled']) ? 'disabled' : '' ?>>
+                            <small><?= pm_Locale::lmsg('cloudflareAccountIdHint') ?></small>
+                        </label>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('cloudflareSyncModeLabel') ?></span>
+                            <select name="cloudflare_sync_mode" <?= empty($featureGates['cloudflare_dns']['enabled']) ? 'disabled' : '' ?>>
+                                <option value="ses" <?= $settings['cloudflare_sync_mode'] === 'ses' ? 'selected' : '' ?>><?= pm_Locale::lmsg('cloudflareSyncSesOnly') ?></option>
+                                <option value="all" <?= $settings['cloudflare_sync_mode'] === 'all' ? 'selected' : '' ?> <?= empty($featureGates['cloudflare_sync_all']['enabled']) ? 'disabled' : '' ?>><?= pm_Locale::lmsg('cloudflareSyncAllRecords') ?></option>
+                            </select>
+                            <small><?= pm_Locale::lmsg('cloudflareSyncModeHint') ?></small>
+                        </label>
+                    <?php elseif ($this->step === 'sns'): ?>
+                        <?php if (empty($featureGates['sns_automation']['enabled'])): ?>
+                            <?= $this->partial('_partials/feature-lock.phtml', array('title' => pm_Locale::lmsg('snsTopicArnLabel'), 'requiredPlan' => $featureGates['sns_automation']['required_plan'], 'upgradeUrl' => $this->upgradeUrl)) ?>
+                        <?php endif; ?>
+                        <label class="ses-field">
+                            <span><?= pm_Locale::lmsg('snsTopicArnLabel') ?></span>
+                            <input type="text" name="sns_topic_arn" value="<?= $this->escape((string) $settings['sns_topic_arn']) ?>" <?= empty($featureGates['sns_automation']['enabled']) ? 'disabled' : '' ?>>
+                            <small><?= pm_Locale::lmsg('snsTopicArnHint') ?></small>
+                        </label>
+                        <p class="ses-guide-label"><?= pm_Locale::lmsg('snsWebhookUrlLabel') ?></p>
+                        <pre class="ses-code"><?= $this->escape($this->webhookUrl) ?></pre>
+                    <?php elseif ($this->step === 'summary'): ?>
+                        <div class="ses-summary-grid">
+                            <div><strong><?= pm_Locale::lmsg('regionLabel') ?></strong><span><?= $this->escape($settings['default_region']) ?></span></div>
+                            <div><strong><?= pm_Locale::lmsg('setupBadgeAwsApi') ?></strong><span><?= $this->hasAwsCredentials ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span></div>
+                            <div><strong><?= pm_Locale::lmsg('setupBadgeSesSmtp') ?></strong><span><?= $this->hasSmtpCredentials ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('missingLabel') ?></span></div>
+                            <div><strong><?= pm_Locale::lmsg('mailFromSubdomainLabel') ?></strong><span><?= $this->escape($settings['mail_from_subdomain']) ?></span></div>
+                            <div><strong><?= pm_Locale::lmsg('setupBadgeAutoSes') ?></strong><span><?= !empty($settings['auto_ses_on_create']) ? pm_Locale::lmsg('enabled') : pm_Locale::lmsg('disabled') ?></span></div>
+                            <div><strong><?= pm_Locale::lmsg('setupBadgeCloudflare') ?></strong><span><?= $this->hasCloudflareToken ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('optionalLabel') ?></span></div>
+                            <div><strong><?= pm_Locale::lmsg('setupBadgeSns') ?></strong><span><?= !empty($settings['sns_topic_arn']) ? pm_Locale::lmsg('configuredLabel') : pm_Locale::lmsg('optionalLabel') ?></span></div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?= $this->partial('setup/_step-faq.phtml', array('step' => $this->step, 'webhookUrl' => $this->webhookUrl)) ?>
+
+                    <div class="ses-wizard-actions">
+                        <?php if ($this->step !== 'welcome'): ?>
+                            <button type="submit" name="direction" value="back" class="btn"><?= pm_Locale::lmsg('setupBackButton') ?></button>
+                        <?php endif; ?>
+                        <?php if (in_array($this->step, array('cloudflare', 'sns'), true)): ?>
+                            <button type="submit" name="direction" value="skip" class="btn"><?= pm_Locale::lmsg('setupSkipButton') ?></button>
+                        <?php endif; ?>
+                        <button type="submit" name="direction" value="next" class="btn btn-primary">
+                            <?= $this->step === 'summary' ? pm_Locale::lmsg('completeSetupButton') : pm_Locale::lmsg($this->step === 'aws' ? 'setupTestAndContinueButton' : ($this->step === 'smtp' ? 'setupTestSmtpAndContinueButton' : 'setupNextButton')) ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+</div>

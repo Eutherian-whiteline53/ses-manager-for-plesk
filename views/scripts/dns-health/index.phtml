@@ -1,0 +1,163 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<div class="ses-page ses-manager-dns-health">
+    <div class="ses-page-header">
+        <div>
+            <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+            <p class="ses-page-description"><?= pm_Locale::lmsg('dnsHealthPageDescription') ?></p>
+        </div>
+    </div>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('dnsHealthPageTitle') ?></h3>
+        </div>
+        <div class="ses-table-wrap">
+            <table class="data-table ses-table">
+                <thead>
+                    <tr>
+                        <th><?= pm_Locale::lmsg('domainColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('sesColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('spfShortColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('dkimShortColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('dmarcShortColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('mxShortColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('scoreColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('lastCheckedColumn') ?></th>
+                        <th><?= pm_Locale::lmsg('actionColumn') ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($this->domains as $domain): ?>
+                    <?php $score = (int) $domain['score']; ?>
+                    <tr>
+                        <td><?= $this->escape($domain['domain_name']) ?></td>
+                        <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['verification_status'])) ?>"><?= $this->escape($domain['verification_status']) ?></span></td>
+                        <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['spf_status'])) ?>"><?= $this->escape($domain['spf_status']) ?></span></td>
+                        <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['dkim_status'])) ?>"><?= $this->escape($domain['dkim_status']) ?></span></td>
+                        <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['dmarc_status'])) ?>"><?= $this->escape($domain['dmarc_status']) ?></span></td>
+                        <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['mx_status'])) ?>"><?= $this->escape($domain['mx_status']) ?></span></td>
+                        <td><span class="ses-score <?= $score >= 70 ? 'is-good' : ($score >= 50 ? 'is-warning' : 'is-critical') ?>"><?= $this->escape($score) ?></span></td>
+                        <td><?= $this->escape($domain['last_checked_at'] ?: pm_Locale::lmsg('neverChecked')) ?></td>
+                        <td>
+                            <form class="ses-inline-form" method="post" action="<?= $this->url(array('controller' => 'dns-health', 'action' => 'refresh', 'id' => $domain['id'])) ?>">
+                                <?= $this->csrfField ?>
+                                <button type="submit" class="btn"><?= pm_Locale::lmsg('refreshAction') ?></button>
+                            </form>
+                            <?php
+                            $fixes = array();
+                            if (in_array(strtolower($domain['spf_status']), array('missing', 'warning', 'failed'), true)) {
+                                $fixes['spf'] = pm_Locale::lmsg('fixSpfButton');
+                            }
+                            if (in_array(strtolower($domain['dkim_status']), array('missing', 'warning', 'failed'), true)) {
+                                $fixes['dkim'] = pm_Locale::lmsg('fixDkimButton');
+                            }
+                            if (in_array(strtolower($domain['dmarc_status']), array('missing', 'warning', 'failed'), true)) {
+                                $fixes['dmarc'] = pm_Locale::lmsg('fixDmarcButton');
+                            }
+                            if (in_array(strtolower($domain['mx_status']), array('missing', 'warning', 'failed'), true)) {
+                                $fixes['mx'] = pm_Locale::lmsg('fixMxButton');
+                            }
+                            ?>
+                            <?php foreach ($fixes as $purpose => $label): ?>
+                                <form class="ses-inline-form" method="post" action="<?= $this->url(array('controller' => 'dns-health', 'action' => 'fix', 'id' => $domain['id'], 'purpose' => $purpose)) ?>">
+                                    <?= $this->csrfField ?>
+                                    <button type="submit" class="btn"><?= $this->escape($label) ?></button>
+                                </form>
+                            <?php endforeach; ?>
+                            <?php if (!empty($fixes)): ?>
+                                <form class="ses-inline-form" method="post" action="<?= $this->url(array('controller' => 'dns-health', 'action' => 'fix', 'id' => $domain['id'], 'purpose' => 'all')) ?>">
+                                    <?= $this->csrfField ?>
+                                    <button type="submit" class="btn action"><?= pm_Locale::lmsg('fixAllDnsButton') ?></button>
+                                </form>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="ses-panel">
+        <div class="ses-panel-header">
+            <h3 class="ses-panel-title"><?= pm_Locale::lmsg('dnsAnalysisTitle') ?></h3>
+        </div>
+        <div class="ses-panel-body">
+            <?php foreach ($this->domains as $domain): ?>
+                <?php
+                $spf = json_decode((string) ($domain['spf_analysis_json'] ?? ''), true) ?: array();
+                $dkim = json_decode((string) ($domain['dkim_analysis_json'] ?? ''), true) ?: array();
+                $dmarc = json_decode((string) ($domain['dmarc_analysis_json'] ?? ''), true) ?: array();
+                $mailFrom = json_decode((string) ($domain['mail_from_analysis_json'] ?? ''), true) ?: array();
+                ?>
+                <details class="ses-analysis">
+                    <summary>
+                        <span class="ses-analysis-domain"><?= $this->escape($domain['domain_name']) ?></span>
+                        <span class="ses-analysis-summary">
+                            <span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['spf_status'])) ?>">SPF: <?= $this->escape($domain['spf_status']) ?></span>
+                            <span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['dkim_status'])) ?>">DKIM: <?= $this->escape($domain['dkim_status']) ?></span>
+                            <span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['dmarc_status'])) ?>">DMARC: <?= $this->escape($domain['dmarc_status']) ?></span>
+                            <span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['mx_status'])) ?>">MAIL FROM: <?= $this->escape($domain['mx_status']) ?></span>
+                        </span>
+                    </summary>
+                    <?php if (empty($spf) && empty($dkim) && empty($dmarc) && empty($mailFrom)): ?>
+                        <div class="ses-empty"><?= pm_Locale::lmsg('dnsAnalysisEmpty') ?></div>
+                    <?php else: ?>
+                        <div class="ses-analysis-grid">
+                            <div class="ses-analysis-card">
+                                <h4><?= pm_Locale::lmsg('spfAnalysisTitle') ?></h4>
+                                <dl>
+                                    <dt><?= pm_Locale::lmsg('recordColumn') ?></dt>
+                                    <dd><?= $this->escape($spf['record'] ?? pm_Locale::lmsg('notAvailable')) ?></dd>
+                                    <dt><?= pm_Locale::lmsg('policyColumn') ?></dt>
+                                    <dd><?= $this->escape($spf['policy'] ?? pm_Locale::lmsg('notAvailable')) ?></dd>
+                                    <dt><?= pm_Locale::lmsg('dnsLookupColumn') ?></dt>
+                                    <dd><?= $this->escape((string) ($spf['lookup_count'] ?? 0)) ?> / <?= $this->escape((string) ($spf['lookup_limit'] ?? 10)) ?></dd>
+                                    <dt><?= pm_Locale::lmsg('sesIncludeColumn') ?></dt>
+                                    <dd><?= !empty($spf['ses_include']) ? pm_Locale::lmsg('yesLabel') : pm_Locale::lmsg('noLabel') ?></dd>
+                                </dl>
+                                <?= $this->partial('dns-health/_issues.phtml', array('issues' => $spf['issues'] ?? array())) ?>
+                            </div>
+                            <div class="ses-analysis-card">
+                                <h4><?= pm_Locale::lmsg('dkimAnalysisTitle') ?></h4>
+                                <dl>
+                                    <dt><?= pm_Locale::lmsg('expectedColumn') ?></dt>
+                                    <dd><?= $this->escape((string) ($dkim['expected_count'] ?? 0)) ?></dd>
+                                    <dt><?= pm_Locale::lmsg('matchedColumn') ?></dt>
+                                    <dd><?= $this->escape((string) ($dkim['matched_count'] ?? 0)) ?></dd>
+                                    <dt><?= pm_Locale::lmsg('conflictColumn') ?></dt>
+                                    <dd><?= $this->escape((string) ($dkim['conflict_count'] ?? 0)) ?></dd>
+                                </dl>
+                                <?= $this->partial('dns-health/_issues.phtml', array('issues' => $dkim['issues'] ?? array())) ?>
+                            </div>
+                            <div class="ses-analysis-card">
+                                <h4><?= pm_Locale::lmsg('dmarcAnalysisTitle') ?></h4>
+                                <dl>
+                                    <dt><?= pm_Locale::lmsg('policyColumn') ?></dt>
+                                    <dd><?= $this->escape($dmarc['policy'] ?? pm_Locale::lmsg('notAvailable')) ?></dd>
+                                    <dt><?= pm_Locale::lmsg('alignmentColumn') ?></dt>
+                                    <dd><?= pm_Locale::lmsg('dkimShortColumn') ?> <?= $this->escape($dmarc['adkim'] ?? 'r') ?> / <?= pm_Locale::lmsg('spfShortColumn') ?> <?= $this->escape($dmarc['aspf'] ?? 'r') ?></dd>
+                                    <dt><?= pm_Locale::lmsg('reportingColumn') ?></dt>
+                                    <dd><?= !empty($dmarc['rua_enabled']) ? pm_Locale::lmsg('enabled') : pm_Locale::lmsg('disabled') ?></dd>
+                                    <dt><?= pm_Locale::lmsg('pctColumn') ?></dt>
+                                    <dd><?= $this->escape((string) ($dmarc['pct'] ?? 100)) ?>%</dd>
+                                </dl>
+                                <?= $this->partial('dns-health/_issues.phtml', array('issues' => $dmarc['issues'] ?? array())) ?>
+                            </div>
+                            <div class="ses-analysis-card">
+                                <h4><?= pm_Locale::lmsg('mailFromAnalysisTitle') ?></h4>
+                                <dl>
+                                    <dt><?= pm_Locale::lmsg('domainColumn') ?></dt>
+                                    <dd><?= $this->escape($mailFrom['domain'] ?? pm_Locale::lmsg('notAvailable')) ?></dd>
+                                    <dt><?= pm_Locale::lmsg('mxShortColumn') ?></dt>
+                                    <dd><?= !empty($mailFrom['ses_feedback_mx']) ? pm_Locale::lmsg('sesFeedbackMxPass') : pm_Locale::lmsg('sesFeedbackMxMissing') ?></dd>
+                                </dl>
+                                <?= $this->partial('dns-health/_issues.phtml', array('issues' => $mailFrom['issues'] ?? array())) ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </details>
+            <?php endforeach; ?>
+        </div>
+    </section>
+</div>

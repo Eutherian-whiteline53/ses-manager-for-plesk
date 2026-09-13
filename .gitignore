@@ -1,0 +1,6 @@
+/var/cache/
+/var/logs/
+/var/tmp/
+/var/release-build/
+.DS_Store
+

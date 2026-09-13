@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<module>
+  <id>ses-manager</id>
+  <name>SES Manager for Plesk</name>
+  <description>Manage Amazon SES verification, DNS health, smarthost setup, and deliverability from Plesk.</description>
+  <category>mail</category>
+  <version>1.0.1</version>
+  <release>1</release>
+  <vendor>Opphisse Agency</vendor>
+  <url>https://opphisse.agency/products/ses-manager</url>
+  <support_url>https://opphisse.agency/support</support_url>
+  <help_url>https://opphisse.agency/products/ses-manager/docs</help_url>
+  <privacy_policy_url>https://opphisse.agency/products/ses-manager/privacy</privacy_policy_url>
+  <plesk_min_version>18.0.0</plesk_min_version>
+</module>

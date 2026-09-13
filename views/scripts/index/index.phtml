@@ -1,0 +1,99 @@
+<?= $this->render('_partials/nav.phtml') ?>
+<?php if (!$this->hasDomains): ?>
+    <div class="ses-page">
+    <div class="ses-manager-empty-state">
+        <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+        <p><?= pm_Locale::lmsg('emptyStateDescription') ?></p>
+        <a class="btn btn-primary" href="<?= $this->escape($this->setupUrl) ?>">
+            <?= pm_Locale::lmsg('emptyStateAction') ?>
+        </a>
+    </div>
+    </div>
+<?php else: ?>
+    <div class="ses-page ses-manager-dashboard">
+        <div class="ses-page-header">
+            <div>
+                <h2 class="ses-page-title"><?= $this->escape($this->pageTitle) ?></h2>
+                <p class="ses-page-description"><?= pm_Locale::lmsg('navDescription') ?></p>
+            </div>
+        </div>
+
+        <?= $this->partial('_partials/ses-connection.phtml', array('connection' => $this->sesConnection)) ?>
+
+        <div class="ses-grid">
+            <div class="ses-stat">
+                <p class="ses-stat-label"><?= pm_Locale::lmsg('averageScoreLabel') ?></p>
+                <p class="ses-stat-value">
+                    <span class="ses-score <?= $this->averageScore >= 70 ? 'is-good' : ($this->averageScore >= 50 ? 'is-warning' : 'is-critical') ?>">
+                        <?= $this->escape($this->averageScore) ?>
+                    </span>
+                    <small>/ 100</small>
+                </p>
+            </div>
+        </div>
+
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('criticalDomainsTitle') ?></h3>
+            </div>
+            <?php if (empty($this->criticalDomains)): ?>
+                <div class="ses-empty"><?= pm_Locale::lmsg('noCriticalIssues') ?></div>
+            <?php else: ?>
+                <div class="ses-table-wrap">
+                    <table class="data-table ses-table">
+                        <thead>
+                            <tr>
+                                <th><?= pm_Locale::lmsg('domainColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('verificationColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('scoreColumn') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($this->criticalDomains as $domain): ?>
+                            <?php $score = (int) $domain['score']; ?>
+                        <tr>
+                            <td><?= $this->escape($domain['domain_name']) ?></td>
+                            <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($domain['verification_status'])) ?>"><?= $this->escape($domain['verification_status']) ?></span></td>
+                            <td><span class="ses-score <?= $score >= 70 ? 'is-good' : ($score >= 50 ? 'is-warning' : 'is-critical') ?>"><?= $this->escape($score) ?></span></td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </section>
+
+        <section class="ses-panel">
+            <div class="ses-panel-header">
+                <h3 class="ses-panel-title"><?= pm_Locale::lmsg('autoJobsTitle') ?></h3>
+            </div>
+            <?php if (empty($this->autoJobs)): ?>
+                <div class="ses-empty"><?= pm_Locale::lmsg('autoJobsEmpty') ?></div>
+            <?php else: ?>
+                <div class="ses-table-wrap">
+                    <table class="data-table ses-table">
+                        <thead>
+                            <tr>
+                                <th><?= pm_Locale::lmsg('domainColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('statusColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('responseColumn') ?></th>
+                                <th><?= pm_Locale::lmsg('dateColumn') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($this->autoJobs as $job): ?>
+                            <?php $payload = json_decode($job['payload'], true); ?>
+                            <tr>
+                                <td><?= $this->escape(isset($payload['domainName']) ? $payload['domainName'] : '-') ?></td>
+                                <td><span class="ses-badge" data-status="<?= $this->escape(strtolower($job['status'])) ?>"><?= $this->escape($job['status']) ?></span></td>
+                                <td class="ses-long"><?= $this->escape($job['last_error'] ?: '-') ?></td>
+                                <td><?= $this->escape($job['created_at']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </section>
+    </div>
+<?php endif; ?>
