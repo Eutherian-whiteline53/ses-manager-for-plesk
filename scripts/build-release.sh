@@ -7,6 +7,7 @@ BUILD_DIR="${TMPDIR:-/tmp}/ses-manager-release-build"
 EXCLUDED_DIR="${BUILD_DIR}/excluded"
 
 EXCLUDE_PATHS=(
+  ".github"
   "tests"
   "scripts/debug-custombutton3.php"
   "scripts/debug-identity.php"
@@ -53,6 +54,7 @@ zip_path = sys.argv[1]
 meta_path = sys.argv[2]
 blocked_exact = set()
 blocked_prefixes = (
+    "plib/.github/",
     "plib/tests/",
     "plib/var/release-build/",
 )
@@ -93,18 +95,19 @@ with zipfile.ZipFile(zip_path) as archive:
         if any(fragment in name for fragment in blocked_fragments):
             bad.append(name)
 
+    meta = archive.read("meta.xml").decode("utf-8")
+    version_match = re.search(r"<version>(.*?)</version>", meta)
+    release_match = re.search(r"<release>(.*?)</release>", meta)
+
 if bad:
     print("Release package contains blocked development files:", file=sys.stderr)
     for name in bad[:50]:
         print(" - " + name, file=sys.stderr)
     sys.exit(1)
 
-    meta = archive.read("meta.xml").decode("utf-8")
-    version_match = re.search(r"<version>(.*?)</version>", meta)
-    release_match = re.search(r"<release>(.*?)</release>", meta)
-    if not version_match or not release_match:
-        print("Release package meta.xml is missing version or release.", file=sys.stderr)
-        sys.exit(1)
+if not version_match or not release_match:
+    print("Release package meta.xml is missing version or release.", file=sys.stderr)
+    sys.exit(1)
 
 print("Release package validation passed: " + zip_path)
 PY

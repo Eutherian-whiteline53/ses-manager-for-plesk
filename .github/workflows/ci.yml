@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  php-checks:
+    name: PHP checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "7.4"
+          coverage: none
+
+      - name: Validate Composer metadata
+        run: composer validate --no-check-publish
+
+      - name: Build autoload metadata
+        run: composer dump-autoload --no-dev
+
+      - name: Check PHP syntax
+        run: |
+          find controllers hooks htdocs library resources sbin scripts views -name '*.php' -o -name '*.phtml' \
+            | sort \
+            | xargs -n1 php -l
+
+      - name: Check locale keys
+        run: |
+          php -r 'include "resources/locales/en-US.php"; $en=$messages; unset($messages); include "resources/locales/tr-TR.php"; $tr=$messages; $missing=array_diff_key($en,$tr); $extra=array_diff_key($tr,$en); if ($missing || $extra) { fwrite(STDERR, "Locale key mismatch\n"); if ($missing) fwrite(STDERR, "Missing tr-TR: ".implode(",", array_keys($missing))."\n"); if ($extra) fwrite(STDERR, "Extra tr-TR: ".implode(",", array_keys($extra))."\n"); exit(1); } echo "Locale keys match: ".count($en)."\n";'
+

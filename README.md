@@ -1,10 +1,33 @@
 # SES Manager for Plesk
 
-SES Manager is a Plesk Obsidian extension for configuring and monitoring Amazon SES mail delivery from inside the Plesk panel.
+[![Latest Release](https://img.shields.io/github/v/release/opphisseagency/ses-manager-for-plesk?display_name=tag)](https://github.com/opphisseagency/ses-manager-for-plesk/releases)
+[![CI](https://github.com/opphisseagency/ses-manager-for-plesk/actions/workflows/ci.yml/badge.svg)](https://github.com/opphisseagency/ses-manager-for-plesk/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Plesk](https://img.shields.io/badge/Plesk-Obsidian%2018.x-blue)](https://www.plesk.com/)
+[![PHP](https://img.shields.io/badge/PHP-7.4%2B-777bb4)](composer.json)
 
-It helps a Plesk administrator connect AWS SES, create SES domain identities, generate DKIM/SPF/DMARC/MAIL FROM DNS records, apply records to Plesk DNS or Cloudflare, configure Plesk smarthost delivery through SES SMTP, send test messages, monitor DNS health, and collect SES bounce/complaint/delivery events through AWS SNS.
+Open-source Plesk extension for routing mail through Amazon SES, automating DKIM/SPF/DMARC DNS records, and tracking SES bounce/complaint events.
+
+SES Manager helps a Plesk administrator connect AWS SES, create SES domain identities, generate DKIM/SPF/DMARC/MAIL FROM DNS records, apply records to Plesk DNS or Cloudflare, configure Plesk smarthost delivery through SES SMTP, send test messages, monitor DNS health, and collect SES bounce/complaint/delivery events through AWS SNS.
 
 This public build does not require a license key and does not enforce package tiers or domain limits.
+
+Download the latest installable ZIP from the [GitHub Releases page](https://github.com/opphisseagency/ses-manager-for-plesk/releases/latest).
+
+## Why Use It?
+
+Plesk can host many domains, while Amazon SES requires identity verification, DKIM, SPF, DMARC, MAIL FROM records, SMTP credentials, and feedback handling. SES Manager puts that operational workflow inside the Plesk panel so administrators can configure, validate, and monitor mail delivery without manually stitching every provider step together.
+
+## Safety Defaults
+
+- No license server, telemetry, package tiers, or domain limits in the public build.
+- AWS, SES SMTP, and Cloudflare secrets are stored with Plesk `pm_Crypt` where supported.
+- Mutating panel actions use CSRF validation.
+- DNS changes are previewed before apply.
+- SPF records are merged rather than overwritten.
+- AWS SNS webhook requests are size-limited and signature-verified.
+
+SES Manager is not affiliated with, endorsed by, or sponsored by Plesk, Amazon Web Services, or Cloudflare.
 
 ## Features
 
