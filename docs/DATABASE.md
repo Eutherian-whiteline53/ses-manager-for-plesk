@@ -13,7 +13,7 @@ Genel ayarlar ve encrypted secret değerleri.
 | aws_secret_encrypted | text | `pm_Crypt` ile encrypted |
 | smtp_username_encrypted | text | SES SMTP kullanıcı adı |
 | smtp_password_encrypted | text | SES SMTP şifresi |
-| cloudflare_token_encrypted | text nullable | Pro modül |
+| cloudflare_token_encrypted | text nullable | Opsiyonel Cloudflare entegrasyonu |
 | cloudflare_account_id | varchar(128) nullable | Zone oluşturma hedef account |
 | default_region | varchar(32) | Örn. `eu-central-1` |
 | default_spf_policy | varchar(16) | `~all` varsayılan |

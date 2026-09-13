@@ -6,7 +6,7 @@ This Privacy Policy explains how SES Manager for Plesk ("Extension"), provided b
 
 ## 1. Scope
 
-This policy applies to the Extension and its related support, licensing, and documentation processes. It does not replace the privacy policies of Plesk, Amazon Web Services, Cloudflare, DNS providers, hosting providers, or other third-party services used with the Extension.
+This policy applies to the Extension and its related support and documentation processes. It does not replace the privacy policies of Plesk, Amazon Web Services, Cloudflare, DNS providers, hosting providers, or other third-party services used with the Extension.
 
 ## 2. Data Processed Locally on the Plesk Server
 
@@ -21,7 +21,7 @@ The Extension may store and process the following data locally on the Plesk serv
 - Mail test metadata such as sender, recipient, subject, status, provider response, and timestamp.
 - SNS webhook events such as bounce, complaint, delivery, recipient, message ID, event type, and raw SNS payload where configured.
 - Job queue records for automation and bulk operations.
-- License status cache, plan, feature entitlement, EULA acceptance record, and related timestamps.
+- EULA acceptance record and related timestamps.
 - Operational logs needed for troubleshooting.
 
 Secrets are stored using Plesk encryption facilities where supported by the Extension.
@@ -46,10 +46,6 @@ Data sent to Cloudflare may include domain names, DNS record names, record value
 
 DNS health checks query public DNS records for configured domains. These DNS queries may disclose the queried domain names to recursive resolvers used by the server.
 
-### Plesk Licensing Infrastructure
-
-If the Extension uses Plesk additional license keys, Plesk licensing infrastructure may process license status, key identifiers, IP binding, reporting IP, operating system, expiration, product items, and related licensing metadata.
-
 ## 4. Data Sent to Provider
 
 The Extension is designed to operate primarily on the Plesk server. Provider does not need routine access to AWS secrets, SMTP passwords, Cloudflare tokens, private keys, mailbox passwords, or full DNS zone exports.
@@ -57,8 +53,8 @@ The Extension is designed to operate primarily on the Plesk server. Provider doe
 Data may be sent to Provider only when:
 
 - You contact support and provide logs, screenshots, diagnostics, or configuration details.
-- You use a Provider-hosted licensing, documentation, telemetry, or support endpoint where explicitly enabled.
-- Plesk or the Extensions Catalog provides licensing, purchase, installation, or support metadata to Provider under the applicable partner program.
+- You use a Provider-hosted documentation, telemetry, or support endpoint where explicitly enabled.
+- Plesk or the Extensions Catalog provides installation or support metadata to Provider under the applicable program.
 
 You should remove secrets and unnecessary personal data before sending support material.
 
@@ -86,7 +82,7 @@ Recommended defaults:
 - Operational logs: 30 days.
 - Bounce, complaint, and delivery events: 180 days.
 - Health check and reputation cache: refreshed periodically and overwritten as needed.
-- License and EULA acceptance records: retained while the Extension remains installed or as required for compliance.
+- EULA acceptance records: retained while the Extension remains installed or as required for compliance.
 
 Administrators may delete local data according to their backup, retention, and compliance policies.
 

@@ -2,6 +2,8 @@
     "name": "opphisse-agency/ses-manager",
     "description": "SES Manager for Plesk",
     "type": "project",
+    "license": "MIT",
+    "version": "1.0.1",
     "require": {
         "php": ">=7.4"
     },

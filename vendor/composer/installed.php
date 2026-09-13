@@ -1,8 +1,8 @@
 <?php return array(
     'root' => array(
-        'name' => 'your-company/ses-manager',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
+        'name' => 'opphisse-agency/ses-manager',
+        'pretty_version' => '1.0.1',
+        'version' => '1.0.1.0',
         'reference' => null,
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
@@ -10,9 +10,9 @@
         'dev' => false,
     ),
     'versions' => array(
-        'your-company/ses-manager' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
+        'opphisse-agency/ses-manager' => array(
+            'pretty_version' => '1.0.1',
+            'version' => '1.0.1.0',
             'reference' => null,
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
