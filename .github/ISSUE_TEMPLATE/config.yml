@@ -1,9 +1,0 @@
-blank_issues_enabled: true
-contact_links:
-  - name: Documentation
-    url: https://opphisse.agency/products/ses-manager/docs
-    about: Read setup and integration documentation.
-  - name: Support
-    url: https://opphisse.agency/support
-    about: Use this channel for private support cases. Do not include secrets.
-
